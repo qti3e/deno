@@ -1,0 +1,19 @@
+{
+  "name": "deno-website",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "https://github.com/ry/deno",
+  "author": "Ryan Dahl <ry@tinyclouds.org>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^10.5.1",
+    "chalk": "^2.4.1",
+    "typescript": "^2.9.2"
+  },
+  "devDependencies": {
+    "ts-node": "^7.0.0",
+    "tslint": "^5.10.0",
+    "tslint-eslint-rules": "^5.3.1"
+  }
+}
