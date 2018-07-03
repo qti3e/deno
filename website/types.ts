@@ -3,9 +3,7 @@
 
 import * as ts from "typescript";
 
-export type DocEntity =
-  | FunctionDeclaration
-  | TypeDeclaration;
+export type DocEntity = FunctionDeclaration | TypeDeclaration;
 
 export type SerilizedData =
   | DocEntity
@@ -15,7 +13,9 @@ export type SerilizedData =
   | TypeReference
   | TypeParameter
   | UnionType
-  | IntersectionType;
+  | IntersectionType
+  | StringLiteral
+  | NumericLiteral;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -24,6 +24,16 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface StringLiteral {
+  type: "string";
+  text: string;
+}
+
+export interface NumericLiteral {
+  type: "number";
+  text: string;
 }
 
 export interface UnionType {

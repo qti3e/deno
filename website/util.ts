@@ -179,7 +179,7 @@ export function removeSpaces(str: string): string {
   let escaped = false;
   for (const c of str) {
     if (c === "\\") escaped = !escaped;
-    if (c === "\"" || c === "'" || c === "`") {
+    if (c === `"` || c === "'" || c === "`") {
       if (!escaped && q === c) {
         q = null;
       } else if (q === null && !escaped) {

@@ -93,3 +93,30 @@ registerVisitor(ts.SyntaxKind.IntersectionType, function(
     types: interTypes
   });
 });
+
+registerVisitor(ts.SyntaxKind.LiteralType, function(
+  node: ts.LiteralTypeNode,
+  e
+): void {
+  this.visit(node.literal, e);
+});
+
+registerVisitor(ts.SyntaxKind.StringLiteral, function(
+  node: ts.StringLiteral,
+  e
+): void {
+  e.push({
+    type: "string",
+    text: node.text
+  });
+});
+
+registerVisitor(ts.SyntaxKind.FirstLiteralToken, function(
+  node: ts.NumericLiteral,
+  e
+): void {
+  e.push({
+    type: "number",
+    text: node.text
+  });
+});
