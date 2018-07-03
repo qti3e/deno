@@ -79,3 +79,4 @@ import "./parser_function";
 import "./parser_jsdoc";
 import "./parser_keyword";
 import "./parser_module";
+import "./parser_type";

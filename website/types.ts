@@ -5,11 +5,36 @@ import * as ts from "typescript";
 
 export type DocEntity = FunctionDeclaration;
 
-export type SerilizedData = DocEntity | JSDocComment | Parameter | Keyword;
+export type SerilizedData =
+  | DocEntity
+  | JSDocComment
+  | Parameter
+  | Keyword
+  | TypeDeclaration
+  | TypeRefrence;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
   documentation: Comment;
+}
+
+export interface Reference {
+  fileName: string;
+}
+
+export interface TypeDeclaration extends DocEntityBase {
+  type: "type";
+  parameters: TypeParameter[];
+  definition: Type;
+}
+
+// TODO
+export interface TypeParameter {}
+
+export interface TypeReference extends Reference {
+  type: "typeRef";
+  name: string;
+  arguments: Type[];
 }
 
 export interface Keyword {
@@ -31,7 +56,7 @@ export interface Parameter extends DocEntityBase {
 }
 
 // TODO
-export type Type = Keyword;
+export type Type = Keyword | TypeReference;
 
 export interface Modifiers {
   visibility?: "public" | "protected" | "private";
@@ -74,4 +99,9 @@ export interface Parser {
   isJS: boolean;
   isDeclarationFile: boolean;
   visit(node: ts.Node, entities: Pushable<SerilizedData>): void;
+}
+
+export interface ParsedEntityName {
+  text: string;
+  identifier: ts.Identifier;
 }
