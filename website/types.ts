@@ -3,15 +3,17 @@
 
 import * as ts from "typescript";
 
-export type DocEntity = FunctionDeclaration;
+export type DocEntity =
+  | FunctionDeclaration
+  | TypeDeclaration;
 
 export type SerilizedData =
   | DocEntity
   | JSDocComment
   | Parameter
   | Keyword
-  | TypeDeclaration
-  | TypeRefrence;
+  | TypeReference
+  | TypeParameter;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -28,8 +30,11 @@ export interface TypeDeclaration extends DocEntityBase {
   definition: Type;
 }
 
-// TODO
-export interface TypeParameter {}
+export interface TypeParameter {
+  type: "typeParam";
+  name: string;
+  constraint?: Type;
+}
 
 export interface TypeReference extends Reference {
   type: "typeRef";

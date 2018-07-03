@@ -50,3 +50,16 @@ registerVisitor(ts.SyntaxKind.TypeReference, function(
     arguments: typeArguments
   });
 });
+
+registerVisitor(ts.SyntaxKind.TypeParameter, function(
+  node: ts.TypeParameterDeclaration,
+  e
+): void {
+  this.visit(node.constraint, util.keepFirstElement);
+  const constraint = util.keepFirstElement.getData();
+  e.push({
+    type: "typeParam",
+    name: node.name.text,
+    constraint
+  });
+});
