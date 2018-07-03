@@ -5,7 +5,11 @@ import * as ts from "typescript";
 import { CompilerHost } from "./tshost";
 import * as types from "./types";
 
-type VISITOR_CB = (this: Parser, node: ts.Node) => types.SerilizedData;
+type VISITOR_CB = (
+  this: types.Parser,
+  node: ts.Node,
+  e: types.Pushable<types.SerilizedData>
+) => types.SerilizedData;
 // ts.SyntaxKind is used when we want to make an alias.
 // registerVisitor(ts.SyntaxKind.Foo, ts.SyntaxKind.Bar);
 type VISITOR = ts.SyntaxKind | VISITOR_CB;
@@ -21,31 +25,17 @@ export function registerVisitor(kind: ts.SyntaxKind, cb: VISITOR): void {
 }
 
 /**
- * Parser contains data which are mostly needed by visitors
- * when we call a visitor, it's bound to value that implement
- * this type.
- * So inside a visitor functions, it is accessible thought `this`.
- */
-interface Parser {
-  sourceFile: ts.SourceFile;
-  checker: ts.TypeChecker;
-  currentNamespace: string[];
-  isJS: boolean;
-  isDeclarationFile: boolean;
-  visit(node: ts.Node): types.SerilizedData;
-}
-
-/**
  * Call the right visitor for the given Node based on its
  * kind.
  * Pass a value to `alias` parameter if you want to overwrite
  * node.kind.
  */
 function visit(
-  this: Parser,
+  this: types.Parser,
   node: ts.Node,
+  entities: types.Pushable<types.SerilizedData>,
   alias?: ts.SyntaxKind
-): types.SerilizedData {
+): void {
   const kind = alias ? alias : node.kind;
   const visitor = VISITORS.get(kind);
   if (visitor === undefined) {
@@ -55,7 +45,7 @@ function visit(
   if (typeof visitor === "number") {
     return visit.call(this, node, visitor);
   }
-  return visitor.call(this, node);
+  visitor.call(this, node, entities);
 }
 
 /**
@@ -69,7 +59,7 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
   const sourceFile = program
     .getSourceFiles()
     .filter(x => x.fileName === "deno.ts")[0];
-  const parser: Parser = {
+  const parser: types.Parser = {
     sourceFile,
     checker,
     currentNamespace: [],
@@ -78,5 +68,10 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
     visit
   };
   parser.visit = visit.bind(parser);
-  return visit.call(parser, sourceFile) as types.DocEntity[];
+  const e = [];
+  visit.call(parser, sourceFile, e);
+  return e as types.DocEntity;
 }
+
+// Import visitors
+import "./parser_module";

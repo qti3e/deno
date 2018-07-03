@@ -5,8 +5,15 @@ import { test } from "liltest";
 import { parse } from "./parser";
 
 test(function test_parser() {
-  parse(`
-  import { a } from "a";
-  export { a };
-  `, "file.ts");
+  parse(
+    `
+  import { b } from "b";
+  type x = null;
+  const a = {};
+  export { a, b as c };
+  export function d() {}
+  export { x }
+  `,
+    "file.ts"
+  );
 });

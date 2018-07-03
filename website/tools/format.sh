@@ -1,3 +1,7 @@
 #!/bin/bash
 prettier --write \
-  parser.ts
+  parser.ts \
+  test.ts \
+  util.ts \
+  parser_test.ts \
+  parser_module.ts
