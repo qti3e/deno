@@ -27,6 +27,27 @@ registerVisitor(ts.SyntaxKind.FunctionDeclaration, function(
     documentation,
     parameters,
     returnType,
+    generator: !!node.asteriskToken,
     ...util.getModifiers(node)
+  });
+});
+
+registerVisitor(ts.SyntaxKind.Parameter, function(
+  node: ts.ParameterDeclaration,
+  e
+): void {
+  const documentation = util.getDocumentation(this, node);
+  // Get data type.
+  this.visit(node.type, util.keepFirstElement);
+  const dataType: types.Type = util.keepFirstElement.getData();
+  // Parameter is optional when it has question token
+  const optional = !!node.questionToken;
+  // Return Parameter
+  e.push({
+    type: "parameter",
+    name: node.name && node.name.getText(),
+    documentation,
+    dataType,
+    optional
   });
 });

@@ -5,7 +5,7 @@ import * as ts from "typescript";
 
 export type DocEntity = FunctionDeclaration;
 
-export type SerilizedData = DocEntity | JSDocComment;
+export type SerilizedData = DocEntity | JSDocComment | Parameter;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -16,10 +16,14 @@ export interface FunctionDeclaration extends DocEntityBase {
   type: "function";
   parameters: Parameter[];
   returnType?: Type;
+  generator: boolean;
 }
 
-// TODO
-export interface Parameter {}
+export interface Parameter extends DocEntityBase {
+  type: "parameter";
+  dataType?: Type;
+  optional: boolean;
+}
 
 // TODO
 export type Type = any;

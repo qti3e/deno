@@ -72,9 +72,11 @@ export function getDocumentation(
     return keepFirstElement.getData();
   }
   let s: ts.Symbol | ts.Signature;
-  s = parser.checker.getSignatureFromDeclaration(node);
-  if (!s && node.name) s = parser.checker.getSymbolAtLocation(node.name);
+  if (node.name) s = parser.checker.getSymbolAtLocation(node.name);
   if (!s) s = parser.checker.getSymbolAtLocation(node);
+  try {
+    if (!s) s = parser.checker.getSignatureFromDeclaration(node);
+  } catch (e) {}
   if (s) {
     const doc = s.getDocumentationComment(parser.checker);
     return ts.displayPartsToString(doc);
