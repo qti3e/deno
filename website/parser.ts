@@ -9,7 +9,7 @@ type VISITOR_CB = (
   this: types.Parser,
   node: ts.Node,
   e: types.Pushable<types.SerilizedData>
-) => types.SerilizedData;
+) => void;
 // ts.SyntaxKind is used when we want to make an alias.
 // registerVisitor(ts.SyntaxKind.Foo, ts.SyntaxKind.Bar);
 type VISITOR = ts.SyntaxKind | VISITOR_CB;
@@ -36,6 +36,7 @@ function visit(
   entities: types.Pushable<types.SerilizedData>,
   alias?: ts.SyntaxKind
 ): void {
+  if (!node) return;
   const kind = alias ? alias : node.kind;
   const visitor = VISITORS.get(kind);
   if (visitor === undefined) {
@@ -70,8 +71,10 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
   parser.visit = visit.bind(parser);
   const e = [];
   visit.call(parser, sourceFile, e);
-  return e as types.DocEntity;
+  return e as types.DocEntity[];
 }
 
 // Import visitors
+import "./parser_function";
+import "./parser_jsdoc";
 import "./parser_module";
