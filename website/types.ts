@@ -5,11 +5,16 @@ import * as ts from "typescript";
 
 export type DocEntity = FunctionDeclaration;
 
-export type SerilizedData = DocEntity | JSDocComment | Parameter;
+export type SerilizedData = DocEntity | JSDocComment | Parameter | Keyword;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
   documentation: Comment;
+}
+
+export interface Keyword {
+  type: "keyword";
+  name: string;
 }
 
 export interface FunctionDeclaration extends DocEntityBase {
@@ -26,7 +31,7 @@ export interface Parameter extends DocEntityBase {
 }
 
 // TODO
-export type Type = any;
+export type Type = Keyword;
 
 export interface Modifiers {
   visibility?: "public" | "protected" | "private";

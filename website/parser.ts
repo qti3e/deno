@@ -77,4 +77,5 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
 // Import visitors
 import "./parser_function";
 import "./parser_jsdoc";
+import "./parser_keyword";
 import "./parser_module";
