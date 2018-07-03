@@ -158,3 +158,41 @@ registerVisitor(ts.SyntaxKind.ParenthesizedType, function(
     elementType
   });
 });
+
+registerVisitor(ts.SyntaxKind.FunctionType, function(
+  node: ts.FunctionTypeNode,
+  e
+): void {
+  const parameters: types.Parameter[] = [];
+  for (const p of node.parameters) {
+    this.visit(p, parameters);
+  }
+  this.visit(node.type, util.keepFirstElement);
+  const returnType = util.keepFirstElement.getData();
+  const typeParameters: types.TypeParameter[] = [];
+  if (node.typeParameters) {
+    for (const t of node.typeParameters) {
+      this.visit(t, typeParameters);
+    }
+  }
+  e.push({
+    type: "functionType",
+    parameters,
+    returnType,
+    typeParameters
+  });
+});
+
+registerVisitor(ts.SyntaxKind.TypeLiteral, function(
+  node: ts.TypeLiteralNode,
+  e
+): void {
+  const members: types.TypeElement[] = [];
+  for (const m of node.members) {
+    this.visit(m, members);
+  }
+  e.push({
+    type: "typeLiteral",
+    members
+  });
+});

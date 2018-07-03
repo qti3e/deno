@@ -18,7 +18,9 @@ export type SerilizedData =
   | NumericLiteral
   | ArrayType
   | TupleType
-  | ParenthesizedType;
+  | ParenthesizedType
+  | FunctionType
+  | TypeLiteral;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -27,6 +29,21 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface TypeLiteral {
+  type: "typeLiteral";
+  members: TypeElement[];
+}
+
+// TODO
+export type TypeElement = any;
+
+export interface FunctionType {
+  type: "functionType";
+  parameters: Parameter[];
+  returnType: Type;
+  typeParameters: TypeParameter[];
 }
 
 export interface ParenthesizedType {
