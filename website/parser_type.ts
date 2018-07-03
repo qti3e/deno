@@ -120,3 +120,41 @@ registerVisitor(ts.SyntaxKind.FirstLiteralToken, function(
     text: node.text
   });
 });
+
+registerVisitor(ts.SyntaxKind.ArrayType, function(
+  node: ts.ArrayTypeNode,
+  e
+): void {
+  this.visit(node.elementType, util.keepFirstElement);
+  const elementType = util.keepFirstElement.getData();
+  e.push({
+    type: "arrayType",
+    elementType
+  });
+});
+
+registerVisitor(ts.SyntaxKind.TupleType, function(
+  node: ts.TupleTypeNode,
+  e
+): void {
+  const elementTypes: types.Type[] = [];
+  for (const t of node.elementTypes) {
+    this.visit(t, elementTypes);
+  }
+  e.push({
+    type: "tupleType",
+    elementTypes
+  });
+});
+
+registerVisitor(ts.SyntaxKind.ParenthesizedType, function(
+  node: ts.ParenthesizedTypeNode,
+  e
+): void {
+  this.visit(node.type, util.keepFirstElement);
+  const elementType = util.keepFirstElement.getData();
+  e.push({
+    type: "parenthesizedType",
+    elementType
+  });
+});

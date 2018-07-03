@@ -15,7 +15,10 @@ export type SerilizedData =
   | UnionType
   | IntersectionType
   | StringLiteral
-  | NumericLiteral;
+  | NumericLiteral
+  | ArrayType
+  | TupleType
+  | ParenthesizedType;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -24,6 +27,21 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface ParenthesizedType {
+  type: "parenthesizedType";
+  elementType: Type;
+}
+
+export interface TupleType {
+  type: "tupleType";
+  elementTypes: Type[];
+}
+
+export interface ArrayType {
+  type: "arrayType";
+  elementType: Type;
 }
 
 export interface StringLiteral {
