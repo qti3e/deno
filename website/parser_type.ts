@@ -63,3 +63,33 @@ registerVisitor(ts.SyntaxKind.TypeParameter, function(
     constraint
   });
 });
+
+registerVisitor(ts.SyntaxKind.ThisType, ts.SyntaxKind.ThisKeyword);
+
+registerVisitor(ts.SyntaxKind.UnionType, function(
+  node: ts.UnionTypeNode,
+  e
+): void {
+  const unionTypes: types.Type[] = [];
+  for (const t of node.types) {
+    this.visit(t, unionTypes);
+  }
+  e.push({
+    type: "unionType",
+    types: unionTypes
+  });
+});
+
+registerVisitor(ts.SyntaxKind.IntersectionType, function(
+  node: ts.IntersectionTypeNode,
+  e
+): void {
+  const interTypes: types.Type[] = [];
+  for (const t of node.types) {
+    this.visit(t, interTypes);
+  }
+  e.push({
+    type: "intersectionType",
+    types: interTypes
+  });
+});

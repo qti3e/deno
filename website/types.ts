@@ -13,7 +13,9 @@ export type SerilizedData =
   | Parameter
   | Keyword
   | TypeReference
-  | TypeParameter;
+  | TypeParameter
+  | UnionType
+  | IntersectionType;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -22,6 +24,16 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface UnionType {
+  type: "unionType";
+  types: Type[];
+}
+
+export interface IntersectionType {
+  type: "intersectionType";
+  types: Type[];
 }
 
 export interface TypeDeclaration extends DocEntityBase {
