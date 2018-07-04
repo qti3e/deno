@@ -6,7 +6,7 @@ import * as ts from "typescript";
 export type DocEntity = FunctionDeclaration | TypeDeclaration | EnumDeclaration;
 
 export type Type =
-  | Keyword
+  | Keyword<string>
   | TypeReference
   | UnionType
   | IntersectionType
@@ -16,10 +16,15 @@ export type Type =
   | ParenthesizedType
   | StringLiteral
   | NumericLiteral
-  | TypeLiteral;
+  | TypeLiteral
+  | ConditionalType
+  | TypeOperator;
 
 // TODO
-export type TypeElement = IndexSignature | ConstructSignature;
+export type TypeElement =
+  | IndexSignature
+  | ConstructSignature
+  | PropertySignature;
 
 export type SerilizedData =
   | DocEntity
@@ -27,7 +32,6 @@ export type SerilizedData =
   | TypeElement
   | JSDocComment
   | Parameter
-  | Keyword
   | TypeParameter
   | EnumMember;
 
@@ -40,6 +44,28 @@ export interface Reference {
   fileName: string;
 }
 
+export interface TypeOperator {
+  type: "typeOperator";
+  operator: Keyword<"keyOf" | "unique">;
+  subject: Type;
+}
+
+export interface ConditionalType {
+  type: "conditionalType";
+  checkType: Type;
+  extendsType: Type;
+  trueType: Type;
+  falseType: Type;
+}
+
+export interface PropertySignature {
+  type: "propertySignature";
+  documentation: Comment;
+  name: string;
+  optional: boolean;
+  dataType: Type;
+}
+
 export interface EnumDeclaration extends DocEntityBase {
   type: "enum";
   members: EnumMember[];
@@ -49,7 +75,7 @@ export interface EnumMember {
   type: "enumMember";
   documentation: Comment;
   name: string;
-  initializer?: NumericLiteral | StringLiteral | Keyword;
+  initializer?: NumericLiteral | StringLiteral | Keyword<string>;
 }
 
 export interface ConstructSignature {
@@ -131,9 +157,9 @@ export interface TypeReference extends Reference {
   arguments: Type[];
 }
 
-export interface Keyword {
+export interface Keyword<Name> {
   type: "keyword";
-  name: string;
+  name: Name;
 }
 
 export interface FunctionDeclaration extends DocEntityBase {

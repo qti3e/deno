@@ -234,3 +234,69 @@ registerVisitor(ts.SyntaxKind.ConstructSignature, function(
     returnType
   });
 });
+
+registerVisitor(ts.SyntaxKind.PropertySignature, function(
+  node: ts.PropertySignature,
+  e
+): void {
+  const documentation = util.getDocumentation(this, node);
+  // TODO Use same logic for parsing names as q/docs
+  const nodeName = node.name;
+  let name: ts.Identifier;
+  if (ts.isIdentifier(nodeName)) {
+    name = name;
+  } else if (ts.isComputedPropertyName(nodeName)) {
+    const tmp = util.parseComputedPropertyName(this, nodeName);
+    name = tmp.identifier;
+  }
+  const optional = !!node.questionToken;
+  this.visit(node.type, util.keepFirstElement);
+  const dataType = util.keepFirstElement.getData();
+  e.push({
+    type: "propertySignature",
+    documentation,
+    name: name.text,
+    optional,
+    dataType
+  });
+});
+
+registerVisitor(ts.SyntaxKind.ConditionalType, function(
+  node: ts.ConditionalTypeNode,
+  e
+): void {
+  this.visit(node.checkType, util.keepFirstElement);
+  const checkType = util.keepFirstElement.getData();
+  this.visit(node.extendsType, util.keepFirstElement);
+  const extendsType = util.keepFirstElement.getData();
+  this.visit(node.trueType, util.keepFirstElement);
+  const trueType = util.keepFirstElement.getData();
+  this.visit(node.falseType, util.keepFirstElement);
+  const falseType = util.keepFirstElement.getData();
+  e.push({
+    type: "conditionalType",
+    checkType,
+    extendsType,
+    falseType,
+    trueType
+  });
+});
+
+registerVisitor(ts.SyntaxKind.TypeOperator, function(
+  node: ts.TypeOperatorNode,
+  e
+): void {
+  const name: "keyOf" | "unique" =
+    node.operator === ts.SyntaxKind.KeyOfKeyword ? "keyOf" : "unique";
+  const operator: types.Keyword<"keyOf" | "unique"> = {
+    type: "keyword",
+    name
+  };
+  this.visit.call(node.type, util.keepFirstElement);
+  const subject = util.keepFirstElement.getData();
+  e.push({
+    type: "typeOperator",
+    operator,
+    subject
+  });
+});
