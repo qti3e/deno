@@ -28,7 +28,8 @@ export type Type =
 export type TypeElement =
   | IndexSignature
   | ConstructSignature
-  | PropertySignature;
+  | PropertySignature
+  | MethodSignature;
 
 export type SerilizedData =
   | DocEntity
@@ -38,7 +39,8 @@ export type SerilizedData =
   | Parameter
   | TypeParameter
   | EnumMember
-  | Name;
+  | Name
+  | ExpressionWithTypeArguments;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -47,6 +49,21 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface ExpressionWithTypeArguments extends Reference {
+  type: "expressionWithTypeArguments";
+  expression: string;
+  arguments: Type[];
+}
+
+export interface MethodSignature {
+  type: "methodSignature";
+  name: string;
+  documentation: Comment;
+  parameters: Parameter[];
+  dataType: Type;
+  optional: boolean;
 }
 
 export interface InterfaceDeclaration extends DocEntityBase {
