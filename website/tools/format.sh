@@ -9,4 +9,5 @@ prettier --write \
   parser_function.ts \
   parser_jsdoc.ts \
   parser_keyword.ts \
-  parser_type.ts
+  parser_type.ts \
+  parser_enum.ts

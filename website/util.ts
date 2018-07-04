@@ -126,21 +126,6 @@ export function getFilename(parser: types.Parser, node: ts.Identifier): string {
   return ".#" + node.text;
 }
 
-export function parseEntityName(
-  parser: types.Parser,
-  node: ts.EntityName
-): types.ParsedEntityName | undefined {
-  if (!ts.isEntityName(node)) return undefined;
-  let identifier: ts.EntityName = node;
-  while (identifier && !ts.isIdentifier(identifier)) {
-    identifier = identifier.left;
-  }
-  return {
-    text: removeSpaces(parser.sourceFile.text.substring(node.pos, node.end)),
-    identifier
-  } as types.ParsedEntityName;
-}
-
 // https://www.ecma-international.org/ecma-262/6.0/#sec-white-space
 const SPACES = [
   "\u0009", // CHARACTER TABULATION
@@ -192,4 +177,40 @@ export function removeSpaces(str: string): string {
     if (c !== "\\") escaped = false;
   }
   return ret;
+}
+
+export function parseEntityName(
+  parser: types.Parser,
+  node: ts.EntityName
+): types.ParsedName | undefined {
+  if (!ts.isEntityName(node)) return undefined;
+  const code = parser.sourceFile.text.substring(node.pos, node.end);
+  let identifier: ts.EntityName = node;
+  while (identifier && !ts.isIdentifier(identifier)) {
+    identifier = identifier.left;
+  }
+  return {
+    text: removeSpaces(code),
+    identifier
+  } as types.ParsedName;
+}
+
+export function parseComputedPropertyName(
+  parser: types.Parser,
+  node: ts.ComputedPropertyName
+): types.ParsedName | undefined {
+  if (!ts.isComputedPropertyName(node)) return undefined;
+  const expression = node.expression;
+  let identifier: ts.Identifier;
+  if (ts.isIdentifier(expression)) {
+    identifier = expression;
+  } else if (ts.isEntityName(expression)) {
+    return parseEntityName(parser, expression);
+  }
+  if (!identifier) return undefined;
+  const code = parser.sourceFile.text.substring(expression.pos, expression.end);
+  return {
+    text: removeSpaces(code),
+    identifier
+  };
 }

@@ -3,7 +3,7 @@
 
 import * as ts from "typescript";
 
-export type DocEntity = FunctionDeclaration | TypeDeclaration;
+export type DocEntity = FunctionDeclaration | TypeDeclaration | EnumDeclaration;
 
 export type Type =
   | Keyword
@@ -28,7 +28,8 @@ export type SerilizedData =
   | JSDocComment
   | Parameter
   | Keyword
-  | TypeParameter;
+  | TypeParameter
+  | EnumMember;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -37,6 +38,18 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface EnumDeclaration extends DocEntityBase {
+  type: "enum";
+  members: EnumMember[];
+}
+
+export interface EnumMember {
+  type: "enumMember";
+  documentation: Comment;
+  name: string;
+  initializer?: NumericLiteral | StringLiteral | Keyword;
 }
 
 export interface ConstructSignature {
@@ -179,7 +192,7 @@ export interface Parser {
   visit(node: ts.Node, entities: Pushable<SerilizedData>): void;
 }
 
-export interface ParsedEntityName {
+export interface ParsedName {
   text: string;
   identifier: ts.Identifier;
 }
