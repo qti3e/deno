@@ -292,7 +292,7 @@ registerVisitor(ts.SyntaxKind.TypeOperator, function(
     type: "keyword",
     name
   };
-  this.visit.call(node.type, util.keepFirstElement);
+  this.visit(node.type, util.keepFirstElement);
   const subject = util.keepFirstElement.getData();
   e.push({
     type: "typeOperator",
