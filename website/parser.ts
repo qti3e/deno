@@ -81,4 +81,5 @@ import "./parser_interface";
 import "./parser_jsdoc";
 import "./parser_keyword";
 import "./parser_module";
+import "./parser_name";
 import "./parser_type";

@@ -35,8 +35,10 @@ registerVisitor(ts.SyntaxKind.TypeReference, function(
   node: ts.TypeReferenceNode,
   e
 ): void {
-  const name = util.parseEntityName(this, node.typeName);
-  const fileName = util.getFilename(this, name.identifier);
+  this.visit(node.typeName, util.keepFirstElement);
+  const name: types.Name = util.keepFirstElement.getData();
+  // assert(name.type, "type");
+  const fileName = util.getFilename(this, name.ref);
   const typeArguments: types.Type[] = [];
   if (node.typeArguments) {
     for (const t of node.typeArguments) {
@@ -46,7 +48,7 @@ registerVisitor(ts.SyntaxKind.TypeReference, function(
   e.push({
     type: "typeRef",
     fileName,
-    name: name.text,
+    name: name && name.text,
     arguments: typeArguments
   });
 });
@@ -240,22 +242,15 @@ registerVisitor(ts.SyntaxKind.PropertySignature, function(
   e
 ): void {
   const documentation = util.getDocumentation(this, node);
-  // TODO Use same logic for parsing names as q/docs
-  const nodeName = node.name;
-  let name: ts.Identifier;
-  if (ts.isIdentifier(nodeName)) {
-    name = name;
-  } else if (ts.isComputedPropertyName(nodeName)) {
-    const tmp = util.parseComputedPropertyName(this, nodeName);
-    name = tmp.identifier;
-  }
+  this.visit(node.name, util.keepFirstElement);
+  const name: types.Name = util.keepFirstElement.getData();
   const optional = !!node.questionToken;
   this.visit(node.type, util.keepFirstElement);
   const dataType = util.keepFirstElement.getData();
   e.push({
     type: "propertySignature",
     documentation,
-    name: name.text,
+    name: name && name.text,
     optional,
     dataType
   });

@@ -31,18 +31,13 @@ registerVisitor(ts.SyntaxKind.EnumMember, function(
   const documentation = util.getDocumentation(this, node);
   this.visit(node.initializer, util.keepFirstElement);
   const initializer = util.keepFirstElement.getData();
-  const nodeName = node.name;
-  let name: string;
-  if (ts.isIdentifier(nodeName)) {
-    name = nodeName.text;
-  } else if (ts.isComputedPropertyName(nodeName)) {
-    const tmp = util.parseComputedPropertyName(this, nodeName);
-    name = tmp.text;
-  }
+  this.visit(node.name, util.keepFirstElement);
+  const name: types.Name = util.keepFirstElement.getData();
+  // assert(name.type, "name");
   e.push({
     type: "enumMember",
     documentation,
-    name,
+    name: name && name.text,
     initializer
   });
 });

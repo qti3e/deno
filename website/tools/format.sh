@@ -11,4 +11,5 @@ prettier --write \
   parser_keyword.ts \
   parser_type.ts \
   parser_enum.ts \
-  parser_interface.ts
+  parser_interface.ts \
+  parser_name.ts

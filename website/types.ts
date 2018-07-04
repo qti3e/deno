@@ -37,7 +37,8 @@ export type SerilizedData =
   | JSDocComment
   | Parameter
   | TypeParameter
-  | EnumMember;
+  | EnumMember
+  | Name;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -229,7 +230,12 @@ export interface Parser {
   visit(node: ts.Node, entities: Pushable<SerilizedData>): void;
 }
 
-export interface ParsedName {
+/**
+ * Should not be used in final generated data.
+ * @internal
+ */
+export interface Name {
+  type: "name";
+  ref: ts.Identifier;
   text: string;
-  identifier: ts.Identifier;
 }
