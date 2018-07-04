@@ -3,7 +3,11 @@
 
 import * as ts from "typescript";
 
-export type DocEntity = FunctionDeclaration | TypeDeclaration | EnumDeclaration;
+export type DocEntity =
+  | FunctionDeclaration
+  | TypeDeclaration
+  | EnumDeclaration
+  | InterfaceDeclaration;
 
 export type Type =
   | Keyword<string>
@@ -42,6 +46,13 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface InterfaceDeclaration extends DocEntityBase {
+  type: "interface";
+  parameters: TypeParameter[];
+  heritageClauses: Type[];
+  members: TypeElement[];
 }
 
 export interface TypeOperator {
