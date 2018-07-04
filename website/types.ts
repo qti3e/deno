@@ -5,22 +5,30 @@ import * as ts from "typescript";
 
 export type DocEntity = FunctionDeclaration | TypeDeclaration;
 
+export type Type =
+  | Keyword
+  | TypeReference
+  | UnionType
+  | IntersectionType
+  | ArrayType
+  | TupleType
+  | FunctionType
+  | ParenthesizedType
+  | StringLiteral
+  | NumericLiteral
+  | TypeLiteral;
+
+// TODO
+export type TypeElement = IndexSignature | ConstructSignature;
+
 export type SerilizedData =
   | DocEntity
+  | Type
+  | TypeElement
   | JSDocComment
   | Parameter
   | Keyword
-  | TypeReference
-  | TypeParameter
-  | UnionType
-  | IntersectionType
-  | StringLiteral
-  | NumericLiteral
-  | ArrayType
-  | TupleType
-  | ParenthesizedType
-  | FunctionType
-  | TypeLiteral;
+  | TypeParameter;
 
 export interface DocEntityBase extends Modifiers {
   name: string;
@@ -31,13 +39,24 @@ export interface Reference {
   fileName: string;
 }
 
+export interface ConstructSignature {
+  type: "constructSignature";
+  documentation: Comment;
+  parameters: Parameter[];
+  returnType: Type;
+}
+
+export interface IndexSignature {
+  type: "indexSignature";
+  documentation: Comment;
+  parameters: TypeParameter[];
+  dataType: Type;
+}
+
 export interface TypeLiteral {
   type: "typeLiteral";
   members: TypeElement[];
 }
-
-// TODO
-export type TypeElement = any;
 
 export interface FunctionType {
   type: "functionType";
@@ -116,9 +135,6 @@ export interface Parameter extends DocEntityBase {
   dataType?: Type;
   optional: boolean;
 }
-
-// TODO
-export type Type = Keyword | TypeReference;
 
 export interface Modifiers {
   visibility?: "public" | "protected" | "private";

@@ -7,13 +7,10 @@ import { parse } from "./parser";
 test(function test_parser() {
   const doc = parse(
     `
-    /**
-     * function x
-     * @param a Hello world
-     * @return p
-     */
-    export function x(a: number) {
-    }
+    export type X = {
+      r();
+      new(): number;
+    };
   `,
     "file.ts"
   );

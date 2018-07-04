@@ -196,3 +196,41 @@ registerVisitor(ts.SyntaxKind.TypeLiteral, function(
     members
   });
 });
+
+registerVisitor(ts.SyntaxKind.IndexSignature, function(
+  node: ts.IndexSignatureDeclaration,
+  e
+): void {
+  const documentation = util.getDocumentation(this, node);
+  const parameters: types.TypeParameter[] = [];
+  for (const p of node.parameters) {
+    this.visit(p, parameters);
+  }
+  this.visit(node.type, util.keepFirstElement);
+  const dataType = util.keepFirstElement.getData();
+  e.push({
+    type: "indexSignature",
+    documentation,
+    parameters,
+    dataType
+  });
+});
+
+registerVisitor(ts.SyntaxKind.ConstructSignature, function(
+  node: ts.ConstructSignatureDeclaration,
+  e
+): void {
+  const documentation = util.getDocumentation(this, node);
+  const parameters: types.Parameter[] = [];
+  for (const p of node.parameters) {
+    this.visit(p, parameters);
+  }
+  this.visit(node.type, util.keepFirstElement);
+  const returnType = util.keepFirstElement.getData();
+  e.push({
+    type: "constructSignature",
+    documentation,
+    parameters,
+    returnType
+  });
+});
