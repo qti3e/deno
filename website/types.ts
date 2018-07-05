@@ -24,6 +24,7 @@ export type Type =
   | ConditionalType
   | TypeOperator
   | TypeQuery
+  | IndexedAccessType
   // TODO Remove TypePredicate and InferType from here.
   | TypePredicate
   | InferType;
@@ -53,6 +54,12 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface IndexedAccessType {
+  type: "indexedAccessType";
+  object: Type;
+  index: Type;
 }
 
 export interface InferType {

@@ -336,5 +336,20 @@ registerVisitor(ts.SyntaxKind.InferType, function(
   });
 });
 
-// IndexedAccessType,
+registerVisitor(ts.SyntaxKind.IndexedAccessType, function(
+  node: ts.IndexedAccessTypeNode,
+  e
+): void {
+  console.log("IndexedAccess", node);
+  this.visit(node.objectType, util.keepFirstElement);
+  const object: types.Type = util.keepFirstElement.getData();
+  this.visit(node.indexType, util.keepFirstElement);
+  const index: types.Type = util.keepFirstElement.getData();
+  e.push({
+    type: "indexedAccessType",
+    object,
+    index
+  });
+});
+
 // MappedType,

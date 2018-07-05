@@ -243,3 +243,13 @@ test(async function test_conditionalType() {
   assertEqual(t.falseType.type, "keyword");
   assertEqual(t.falseType.name, "any");
 });
+
+test(async function test_indexedAccessType() {
+  const a = parseTs(`export type a = {b: number;}[x]`)[0];
+  const t = a.definition;
+  assertEqual(t.type, "indexedAccessType");
+  assertEqual(t.object.type, "typeLiteral");
+  assertEqual(t.object.members.length, 1);
+  assertEqual(t.index.type, "typeRef");
+  assertEqual(t.index.name, "x");
+});
