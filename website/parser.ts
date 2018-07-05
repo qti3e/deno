@@ -66,10 +66,11 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
     currentNamespace: [],
     isJS: fileName.endsWith(".js"),
     isDeclarationFile: fileName.endsWith(".d.ts"),
-    visit
+    visit,
   };
   parser.visit = visit.bind(parser);
   const e = [];
+  console.log(sourceFile);
   visit.call(parser, sourceFile, e);
   return e as types.DocEntity[];
 }

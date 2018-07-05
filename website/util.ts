@@ -43,11 +43,8 @@ export const keepFirstElement = {
 export function findDeclaration(
   parser: types.Parser,
   node: ts.Identifier
-): ts.Node | 0 | -1 {
+): ts.Node | 0 {
   const sourceFile = parser.sourceFile as any;
-  if (!sourceFile.locals.has(node.text)) {
-    return -1;
-  }
   const flowNode = (node as any).flowNode;
   if (
     flowNode.node &&
@@ -57,6 +54,23 @@ export function findDeclaration(
     return flowNode.node;
   }
   return sourceFile.locals.get(node.text).declarations[0];
+}
+
+/**
+ * Returns file name where given node has been originally
+ * defiend.
+ * A file name looks like this:
+ * [file name]#[namespaces joind with .].[node.name.text]
+ * "." means the node was defiend in the current file.
+ */
+export function getFilename(parser: types.Parser, node: ts.Identifier): string {
+  // TODO
+  // 1. get a node from findDeclaration(parser, node) call it n.
+  // 2. if n is any kind of import statements:
+  // 3.   return file name of n;
+  // 4. else:
+  // 5.   return ".";
+  return ".#" + node.text;
 }
 
 /**
@@ -111,19 +125,6 @@ export function getModifiers(node: ts.Node): types.Modifiers {
     ret.readonly = true;
   }
   return ret;
-}
-
-/**
- * Returns file name where given node points to.
- */
-export function getFilename(parser: types.Parser, node: ts.Identifier): string {
-  // TODO
-  // 1. get a node from findDeclaration(parser, node) call it n.
-  // 2. if n is any kind of import statements:
-  // 3.   return file name of n;
-  // 4. else:
-  // 5.   return ".";
-  return ".#" + node.text;
 }
 
 // https://www.ecma-international.org/ecma-262/6.0/#sec-white-space

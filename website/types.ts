@@ -7,7 +7,8 @@ export type DocEntity =
   | FunctionDeclaration
   | TypeDeclaration
   | EnumDeclaration
-  | InterfaceDeclaration;
+  | InterfaceDeclaration
+  | ModuleDeclaration;
 
 export type Type =
   | Keyword<string>
@@ -55,6 +56,12 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface ModuleDeclaration {
+  type: "module";
+  name: string;
+  body: DocEntity[];
 }
 
 export interface MappedType {
