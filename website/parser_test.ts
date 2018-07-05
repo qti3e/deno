@@ -267,3 +267,23 @@ test(async function test_mappedType() {
   assertEqual(t.typeParameter.constraint.type, "typeRef");
   assertEqual(t.typeParameter.constraint.name, "K");
 });
+
+test(async function test_findDeclaration() {
+  const doc = parseTs(
+    `
+    /**
+     * Wrong
+     */
+    function a() {}
+    export namespace n {
+      /**
+       * Right
+       */
+      function a() {}
+      export { a }
+    }
+    `
+  );
+  assertEqual(doc[0].name, "n");
+  assertEqual(doc[0].body[0].documentation.comment, "Right");
+});
