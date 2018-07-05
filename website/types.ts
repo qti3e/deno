@@ -25,6 +25,7 @@ export type Type =
   | TypeOperator
   | TypeQuery
   | IndexedAccessType
+  | MappedType
   // TODO Remove TypePredicate and InferType from here.
   | TypePredicate
   | InferType;
@@ -54,6 +55,14 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface MappedType {
+  type: "mappedType";
+  readonlyToken?: "readonly" | "+" | "-";
+  questionToken?: "?" | "+" | "-";
+  typeParameter: TypeParameter;
+  dataType: Type;
 }
 
 export interface IndexedAccessType {

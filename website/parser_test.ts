@@ -253,3 +253,17 @@ test(async function test_indexedAccessType() {
   assertEqual(t.index.type, "typeRef");
   assertEqual(t.index.name, "x");
 });
+
+test(async function test_mappedType() {
+  const a = parseTs(`export type a = {readonly [n in K]?: number}`)[0];
+  const t = a.definition;
+  assertEqual(t.type, "mappedType");
+  assertEqual(t.questionToken, "?");
+  assertEqual(t.readonlyToken, "readonly");
+  assertEqual(t.dataType.type, "keyword");
+  assertEqual(t.dataType.name, "number");
+  assertEqual(t.typeParameter.type, "typeParam");
+  assertEqual(t.typeParameter.name, "n");
+  assertEqual(t.typeParameter.constraint.type, "typeRef");
+  assertEqual(t.typeParameter.constraint.name, "K");
+});

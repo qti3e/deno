@@ -340,7 +340,6 @@ registerVisitor(ts.SyntaxKind.IndexedAccessType, function(
   node: ts.IndexedAccessTypeNode,
   e
 ): void {
-  console.log("IndexedAccess", node);
   this.visit(node.objectType, util.keepFirstElement);
   const object: types.Type = util.keepFirstElement.getData();
   this.visit(node.indexType, util.keepFirstElement);
@@ -352,4 +351,41 @@ registerVisitor(ts.SyntaxKind.IndexedAccessType, function(
   });
 });
 
-// MappedType,
+registerVisitor(ts.SyntaxKind.MappedType, function(
+  node: ts.MappedTypeNode,
+  e
+): void {
+  let readonlyToken: "readonly" | "+" | "-";
+  switch (node.readonlyToken && node.readonlyToken.kind) {
+    case ts.SyntaxKind.ReadonlyKeyword:
+      readonlyToken = "readonly";
+      break;
+    case ts.SyntaxKind.PlusToken:
+      readonlyToken = "+";
+      break;
+    case ts.SyntaxKind.MinusToken:
+      readonlyToken = "-";
+  }
+  let questionToken: "?" | "+" | "-";
+  switch (node.questionToken && node.questionToken.kind) {
+    case ts.SyntaxKind.QuestionToken:
+      questionToken = "?";
+      break;
+    case ts.SyntaxKind.PlusToken:
+      questionToken = "+";
+      break;
+    case ts.SyntaxKind.MinusToken:
+      questionToken = "-";
+  }
+  this.visit(node.typeParameter, util.keepFirstElement);
+  const typeParameter = util.keepFirstElement.getData();
+  this.visit(node.type, util.keepFirstElement);
+  const dataType = util.keepFirstElement.getData();
+  e.push({
+    type: "mappedType",
+    readonlyToken,
+    questionToken,
+    typeParameter,
+    dataType
+  });
+});
