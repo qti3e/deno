@@ -209,3 +209,9 @@ test(async function test_interface() {
   assertEqual(d.parameters[0].dataType.type, "number");
   assertEqual(d.parameters[0].dataType.text, "4");
 });
+
+test(async function test_typeQuery() {
+  const a = parseTs(`export type a = typeof P.x;`)[0];
+  assertEqual(a.definition.type, "typeQuery");
+  assertEqual(a.definition.exprName, "P.x");
+});

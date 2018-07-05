@@ -22,7 +22,8 @@ export type Type =
   | NumericLiteral
   | TypeLiteral
   | ConditionalType
-  | TypeOperator;
+  | TypeOperator
+  | TypeQuery;
 
 // TODO
 export type TypeElement =
@@ -49,6 +50,11 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface TypeQuery {
+  type: "typeQuery";
+  exprName: string;
 }
 
 export interface ExpressionWithTypeArguments extends Reference {

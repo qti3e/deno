@@ -295,3 +295,20 @@ registerVisitor(ts.SyntaxKind.TypeOperator, function(
     subject
   });
 });
+
+registerVisitor(ts.SyntaxKind.TypeQuery, function(
+  node: ts.TypeQueryNode,
+  e
+): void {
+  this.visit(node.exprName, util.keepFirstElement);
+  const exprName: types.Name = util.keepFirstElement.getData();
+  // assert(exprName.type, "name");
+  e.push({
+    type: "typeQuery",
+    exprName: exprName && exprName.text
+  });
+});
+
+// InferType,
+// IndexedAccessType,
+// MappedType,
