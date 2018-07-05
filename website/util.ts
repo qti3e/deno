@@ -39,12 +39,10 @@ export const keepFirstElement = {
   }
 };
 
-// TODO It does not work once we support namespace.
 export function findDeclaration(
   parser: types.Parser,
   node: ts.Identifier
-): ts.Node | 0 {
-  const sourceFile = parser.sourceFile as any;
+): ts.Node | undefined {
   const flowNode = (node as any).flowNode;
   if (
     flowNode.node &&
@@ -53,7 +51,14 @@ export function findDeclaration(
   ) {
     return flowNode.node;
   }
-  return sourceFile.locals.get(node.text).declarations[0];
+  let n: any = node;
+  while (n) {
+    if (n.locals && n.locals.has(node.text)) {
+      return n.locals.get(node.text).declarations[0];
+    }
+    n = n.parent;
+  }
+  return undefined;
 }
 
 /**

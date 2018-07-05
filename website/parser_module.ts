@@ -48,6 +48,7 @@ registerVisitor(ts.SyntaxKind.ExportSpecifier, function(
   e
 ): void {
   const d = util.findDeclaration(this, node.propertyName || node.name);
+  // Maybe print a warning or throw an error?
   if (!d) return;
   this.visit(d, util.keepFirstElement);
   const data = util.keepFirstElement.getData();
