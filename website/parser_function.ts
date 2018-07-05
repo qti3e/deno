@@ -20,6 +20,13 @@ registerVisitor(ts.SyntaxKind.FunctionDeclaration, function(
   // Return type.
   this.visit(node.type, util.keepFirstElement);
   const returnType: types.Type = util.keepFirstElement.getData();
+  // Type parameters
+  const typeParameters: types.TypeParameter[] = [];
+  if (node.typeParameters) {
+    for (const p of node.typeParameters) {
+      this.visit(p, typeParameters);
+    }
+  }
   // Return documentation entity.
   e.push({
     type: "function",
@@ -28,6 +35,7 @@ registerVisitor(ts.SyntaxKind.FunctionDeclaration, function(
     parameters,
     returnType,
     generator: !!node.asteriskToken,
+    typeParameters,
     ...util.getModifiers(node)
   });
 });

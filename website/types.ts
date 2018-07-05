@@ -196,6 +196,7 @@ export interface FunctionDeclaration extends DocEntityBase {
   parameters: Parameter[];
   returnType?: Type;
   generator: boolean;
+  typeParameters: TypeParameter[];
 }
 
 export interface Parameter extends DocEntityBase {

@@ -65,3 +65,52 @@ test(function test_enum() {
   assertEqual(d.initializer.name, "null");
   assertEqual(!!d.documentation, false);
 });
+
+test(async function test_function() {
+  const F = parseTs(
+    `
+    /**
+     * Doc
+     * @param n Foo
+     */
+    export function F<P extends T<string>>(n: P<number>, m?): void {
+    }
+    `
+  )[0];
+  assertEqual(F.type, "function");
+  assertEqual(F.name, "F");
+  // Test documentation
+  assertEqual(F.documentation.type, "jsdoc");
+  assertEqual(F.documentation.comment, "Doc");
+  // TODO
+  // assertEqual(F.documentation.tags.length, 1);
+  // Test type parameters
+  const P = F.typeParameters[0];
+  assertEqual(F.typeParameters.length, 1);
+  assertEqual(P.type, "typeParam");
+  assertEqual(P.name, "P");
+  assertEqual(P.constraint.type, "typeRef");
+  assertEqual(P.constraint.name, "T");
+  assertEqual(P.constraint.arguments.length, 1);
+  assertEqual(P.constraint.arguments[0].type, "keyword");
+  assertEqual(P.constraint.arguments[0].name, "string");
+  // Test parameters
+  const n = F.parameters[0];
+  const m = F.parameters[1];
+  assertEqual(F.parameters.length, 2);
+  assertEqual(n.type, "parameter");
+  assertEqual(n.name, "n");
+  assertEqual(n.dataType.type, "typeRef");
+  assertEqual(n.dataType.name, "P");
+  assertEqual(n.dataType.arguments.length, 1);
+  assertEqual(n.dataType.arguments[0].type, "keyword");
+  assertEqual(n.dataType.arguments[0].name, "number");
+  assertEqual(n.documentation, "Foo");
+  assertEqual(m.name, "m");
+  // Test `optional`
+  assertEqual(n.optional, false);
+  assertEqual(m.optional, true);
+  // Test return type
+  assertEqual(F.returnType.type, "keyword");
+  assertEqual(F.returnType.name, "void");
+});
