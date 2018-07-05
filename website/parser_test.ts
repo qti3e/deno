@@ -215,3 +215,11 @@ test(async function test_typeQuery() {
   assertEqual(a.definition.type, "typeQuery");
   assertEqual(a.definition.exprName, "P.x");
 });
+
+test(async function test_typePredicate() {
+  const a = parseTs(`export function a(b): b is string {}`)[0];
+  assertEqual(a.returnType.type, "typePredicate");
+  assertEqual(a.returnType.parameterName, "b");
+  assertEqual(a.returnType.dataType.type, "keyword");
+  assertEqual(a.returnType.dataType.name, "string");
+});

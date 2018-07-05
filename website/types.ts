@@ -23,7 +23,8 @@ export type Type =
   | TypeLiteral
   | ConditionalType
   | TypeOperator
-  | TypeQuery;
+  | TypeQuery
+  | TypePredicate;
 
 // TODO
 export type TypeElement =
@@ -50,6 +51,12 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface TypePredicate {
+  type: "typePredicate";
+  parameterName: string;
+  dataType: Type;
 }
 
 export interface TypeQuery {

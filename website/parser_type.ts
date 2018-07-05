@@ -309,6 +309,21 @@ registerVisitor(ts.SyntaxKind.TypeQuery, function(
   });
 });
 
+registerVisitor(ts.SyntaxKind.FirstTypeNode, function(
+  node: ts.TypePredicateNode,
+  e
+): void {
+  this.visit(node.parameterName, util.keepFirstElement);
+  const parameterName: types.Name = util.keepFirstElement.getData();
+  this.visit(node.type, util.keepFirstElement);
+  const dataType = util.keepFirstElement.getData();
+  e.push({
+    type: "typePredicate",
+    parameterName: parameterName && parameterName.text,
+    dataType
+  });
+});
+
 // InferType,
 // IndexedAccessType,
 // MappedType,
