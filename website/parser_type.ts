@@ -324,6 +324,17 @@ registerVisitor(ts.SyntaxKind.FirstTypeNode, function(
   });
 });
 
-// InferType,
+registerVisitor(ts.SyntaxKind.InferType, function(
+  node: ts.InferTypeNode,
+  e
+): void {
+  this.visit(node.typeParameter, util.keepFirstElement);
+  const parameter: types.TypeParameter = util.keepFirstElement.getData();
+  e.push({
+    type: "inferType",
+    parameter
+  });
+});
+
 // IndexedAccessType,
 // MappedType,

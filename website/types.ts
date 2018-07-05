@@ -24,7 +24,9 @@ export type Type =
   | ConditionalType
   | TypeOperator
   | TypeQuery
-  | TypePredicate;
+  // TODO Remove TypePredicate and InferType from here.
+  | TypePredicate
+  | InferType;
 
 // TODO
 export type TypeElement =
@@ -51,6 +53,11 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface InferType {
+  type: "inferType";
+  parameter: TypeParameter;
 }
 
 export interface TypePredicate {

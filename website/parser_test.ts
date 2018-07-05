@@ -223,3 +223,23 @@ test(async function test_typePredicate() {
   assertEqual(a.returnType.dataType.type, "keyword");
   assertEqual(a.returnType.dataType.name, "string");
 });
+
+test(async function test_conditionalType() {
+  const a = parseTs(`export type a<T> = T extends (infer R)[] ? R : any;`)[0];
+  const t = a.definition;
+  assertEqual(t.type, "conditionalType");
+  assertEqual(t.checkType.type, "typeRef");
+  assertEqual(t.checkType.name, "T");
+  assertEqual(t.extendsType.type, "arrayType");
+  assertEqual(t.extendsType.elementType.type, "parenthesizedType");
+  assertEqual(t.extendsType.elementType.elementType.type, "inferType");
+  assertEqual(
+    t.extendsType.elementType.elementType.parameter.type,
+    "typeParam"
+  );
+  assertEqual(t.extendsType.elementType.elementType.parameter.name, "R");
+  assertEqual(t.trueType.type, "typeRef");
+  assertEqual(t.trueType.name, "R");
+  assertEqual(t.falseType.type, "keyword");
+  assertEqual(t.falseType.name, "any");
+});
