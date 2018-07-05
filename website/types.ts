@@ -63,6 +63,7 @@ export interface MethodSignature {
   documentation: Comment;
   parameters: Parameter[];
   dataType: Type;
+  typeParameters: TypeParameter[];
   optional: boolean;
 }
 

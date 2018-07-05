@@ -73,8 +73,7 @@ test(async function test_function() {
      * Doc
      * @param n Foo
      */
-    export function F<P extends T<string>>(n: P<number>, m?): void {
-    }
+    export function F<P extends T<string>>(n: P<number>, m?): void {}
     `
   )[0];
   assertEqual(F.type, "function");
@@ -113,4 +112,100 @@ test(async function test_function() {
   // Test return type
   assertEqual(F.returnType.type, "keyword");
   assertEqual(F.returnType.name, "void");
+});
+
+test(async function test_interface() {
+  const I = parseTs(
+    `
+    /**
+     * Foo
+     */
+    export interface I<A extends B> extends N<A>, M<keyof A>, K {
+      /**
+       * 1
+       */
+      a: number;
+      b?: string;
+      // 3
+      c<S>(a: number, b?: string): void;
+      /**
+       * @param x foo
+       */
+      new(x: 4, c): this;
+    }
+    `
+  )[0];
+  assertEqual(I.type, "interface");
+  assertEqual(I.name, "I");
+  assertEqual(I.documentation.type, "jsdoc");
+  assertEqual(I.documentation.comment, "Foo");
+  // Test parameters
+  assertEqual(I.parameters.length, 1);
+  assertEqual(I.parameters[0].type, "typeParam");
+  assertEqual(I.parameters[0].name, "A");
+  assertEqual(I.parameters[0].constraint.type, "typeRef");
+  assertEqual(I.parameters[0].constraint.name, "B");
+  // Test heritage clauses
+  const N = I.heritageClauses[0];
+  const M = I.heritageClauses[1];
+  const K = I.heritageClauses[2];
+  assertEqual(I.heritageClauses.length, 3);
+  assertEqual(N.type, "expressionWithTypeArguments");
+  assertEqual(N.expression, "N");
+  assertEqual(N.arguments.length, 1);
+  assertEqual(N.arguments[0].type, "typeRef");
+  assertEqual(N.arguments[0].name, "A");
+  assertEqual(M.type, "expressionWithTypeArguments");
+  assertEqual(M.expression, "M");
+  assertEqual(M.arguments.length, 1);
+  assertEqual(M.arguments[0].type, "typeOperator");
+  assertEqual(M.arguments[0].operator.type, "keyword");
+  assertEqual(M.arguments[0].operator.name, "keyOf");
+  assertEqual(M.arguments[0].subject.type, "typeRef");
+  assertEqual(M.arguments[0].subject.name, "A");
+  assertEqual(K.type, "expressionWithTypeArguments");
+  assertEqual(K.expression, "K");
+  assertEqual(K.arguments.length, 0);
+  // Test members
+  const a = I.members[0];
+  const b = I.members[1];
+  const c = I.members[2];
+  const d = I.members[3];
+  assertEqual(I.members.length, 4);
+  assertEqual(a.type, "propertySignature");
+  assertEqual(a.name, "a");
+  assertEqual(a.optional, false);
+  assertEqual(a.documentation.type, "jsdoc");
+  assertEqual(a.documentation.comment, "1");
+  assertEqual(a.dataType.type, "keyword");
+  assertEqual(a.dataType.name, "number");
+  assertEqual(b.type, "propertySignature");
+  assertEqual(b.name, "b");
+  assertEqual(b.optional, true);
+  assertEqual(c.type, "methodSignature");
+  assertEqual(c.name, "c");
+  assertEqual(c.optional, false);
+  // TODO
+  // assertEqual(c.documentation, "3");
+  assertEqual(c.parameters.length, 2);
+  assertEqual(c.parameters[0].name, "a");
+  assertEqual(c.parameters[1].name, "b");
+  assertEqual(c.typeParameters.length, 1);
+  assertEqual(c.typeParameters[0].type, "typeParam");
+  assertEqual(c.typeParameters[0].name, "S");
+  assertEqual(c.dataType.type, "keyword");
+  assertEqual(c.dataType.name, "void");
+  assertEqual(d.type, "constructSignature");
+  assertEqual(d.returnType.type, "keyword");
+  assertEqual(d.returnType.name, "this");
+  assertEqual(d.parameters.length, 2);
+  assertEqual(d.documentation.type, "jsdoc");
+  assertEqual(d.documentation.comment, undefined);
+  // TODO
+  // assertEqual(d.documentation.tags.length, 1);
+  assertEqual(d.parameters[0].type, "parameter");
+  assertEqual(d.parameters[0].name, "x");
+  assertEqual(d.parameters[0].documentation, "foo");
+  assertEqual(d.parameters[0].dataType.type, "number");
+  assertEqual(d.parameters[0].dataType.text, "4");
 });

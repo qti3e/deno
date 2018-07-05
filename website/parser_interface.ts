@@ -22,7 +22,9 @@ registerVisitor(ts.SyntaxKind.InterfaceDeclaration, function(
   const heritageClauses: types.Type[] = [];
   if (node.heritageClauses) {
     for (const h of node.heritageClauses) {
-      this.visit(h, heritageClauses);
+      for (const t of h.types) {
+        this.visit(t, heritageClauses);
+      }
     }
   }
   // Get members
@@ -57,12 +59,19 @@ registerVisitor(ts.SyntaxKind.MethodSignature, function(
   }
   this.visit(node.type, util.keepFirstElement);
   const dataType = util.keepFirstElement.getData();
+  const typeParameters: types.TypeParameter[] = [];
+  if (node.typeParameters) {
+    for (const t of node.typeParameters) {
+      this.visit(t, typeParameters);
+    }
+  }
   e.push({
     type: "methodSignature",
     documentation,
     name: name && name.text,
     parameters,
     dataType,
+    typeParameters,
     optional: !!node.questionToken
   });
 });
@@ -75,8 +84,10 @@ registerVisitor(ts.SyntaxKind.ExpressionWithTypeArguments, function(
   const expression: types.Name = util.keepFirstElement.getData();
   // assert(name.type, "type");
   const typeArguments: types.Type[] = [];
-  for (const t of node.typeArguments) {
-    this.visit(t, typeArguments);
+  if (node.typeArguments) {
+    for (const t of node.typeArguments) {
+      this.visit(t, typeArguments);
+    }
   }
   e.push({
     type: "expressionWithTypeArguments",

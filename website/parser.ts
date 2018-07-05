@@ -44,7 +44,7 @@ function visit(
     return;
   }
   if (typeof visitor === "number") {
-    return visit.call(this, node, visitor);
+    return visit.call(this, node, entities, visitor);
   }
   visitor.call(this, node, entities);
 }
