@@ -58,6 +58,7 @@ export function findDeclaration(
     }
     n = n.parent;
   }
+  // TODO throw error.
   return undefined;
 }
 

@@ -284,12 +284,19 @@ export interface Pushable<T> {
  * So inside a visitor functions, it is accessible thought `this`.
  */
 export interface Parser {
-  sourceFile: ts.SourceFile;
-  checker: ts.TypeChecker;
-  currentNamespace: string[];
-  isJS: boolean;
-  isDeclarationFile: boolean;
+  readonly sourceFile: ts.SourceFile;
+  readonly checker: ts.TypeChecker;
+  readonly currentNamespace: string[];
+  readonly isJS: boolean;
+  readonly isDeclarationFile: boolean;
   visit(node: ts.Node, entities: Pushable<SerilizedData>): void;
+  readonly default: symbol;
+  requestVisit(
+    this: Parser,
+    moduleName: string,
+    entities: Pushable<SerilizedData>,
+    name?: string | Parser["default"]
+  ): void;
 }
 
 /**

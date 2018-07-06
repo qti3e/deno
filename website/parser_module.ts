@@ -74,3 +74,37 @@ registerVisitor(ts.SyntaxKind.ModuleDeclaration, function(
 });
 
 registerVisitor(ts.SyntaxKind.ModuleBlock, ts.SyntaxKind.SourceFile);
+
+registerVisitor(ts.SyntaxKind.ImportSpecifier, function(
+  node: ts.ImportSpecifier,
+  e
+): void {
+  const moduleSpecifier = node.parent.parent.parent.moduleSpecifier;
+  // TODO Throw an error.
+  if (!ts.isStringLiteral(moduleSpecifier)) return;
+  const fileName = moduleSpecifier.text;
+  const name = (node.propertyName || node.name).text;
+  this.requestVisit(fileName, e, name);
+});
+
+registerVisitor(ts.SyntaxKind.NamespaceImport, function(
+  node: ts.NamespaceImport,
+  e
+): void {
+  const moduleSpecifier = node.parent.parent.moduleSpecifier;
+  // TODO Throw an error.
+  if (!ts.isStringLiteral(moduleSpecifier)) return;
+  const fileName = moduleSpecifier.text;
+  this.requestVisit(fileName, e);
+});
+
+registerVisitor(ts.SyntaxKind.ImportClause, function(
+  node: ts.ImportClause,
+  e
+): void {
+  const moduleSpecifier = node.parent.moduleSpecifier;
+  // TODO Throw an error.
+  if (!ts.isStringLiteral(moduleSpecifier)) return;
+  const fileName = moduleSpecifier.text;
+  this.requestVisit(fileName, e, this.default);
+});

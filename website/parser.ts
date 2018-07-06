@@ -49,6 +49,16 @@ function visit(
   visitor.call(this, node, entities);
 }
 
+function requestVisit(
+  this: types.Parser,
+  moduleName: string,
+  entities: types.Pushable<types.SerilizedData>,
+  name?: string
+): void {
+  // TODO
+  console.log(moduleName, name);
+}
+
 /**
  * Extract documentations of the given source code.
  */
@@ -66,9 +76,12 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
     currentNamespace: [],
     isJS: fileName.endsWith(".js"),
     isDeclarationFile: fileName.endsWith(".d.ts"),
+    default: Symbol("default"),
     visit,
+    requestVisit
   };
   parser.visit = visit.bind(parser);
+  parser.requestVisit = requestVisit.bind(parser);
   const e = [];
   console.log(sourceFile);
   visit.call(parser, sourceFile, e);
