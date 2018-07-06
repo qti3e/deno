@@ -173,6 +173,9 @@ export function getModifiers(node: ts.Node): types.Modifiers {
   if ((flags & ts.ModifierFlags.Readonly) !== 0) {
     ret.readonly = true;
   }
+  if ((flags & ts.ModifierFlags.Abstract) !== 0) {
+    ret.abstract = true;
+  }
   return ret;
 }
 

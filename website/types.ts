@@ -8,7 +8,8 @@ export type DocEntity =
   | TypeDeclaration
   | EnumDeclaration
   | InterfaceDeclaration
-  | ModuleDeclaration;
+  | ModuleDeclaration
+  | ClassDeclaration;
 
 export type Type =
   | Keyword<string>
@@ -32,11 +33,21 @@ export type Type =
   | InferType;
 
 // TODO
+// CallSignatureDeclaration
 export type TypeElement =
   | IndexSignature
   | ConstructSignature
   | PropertySignature
   | MethodSignature;
+
+// TODO
+// PropertyDeclaration
+// MethodDeclaration
+// ConstructorDeclaration
+// GetAccessorDeclaration
+// SetAccessorDeclaration
+// IndexSignatureDeclaration
+export type ClassElement = any;
 
 export type SerilizedData =
   | DocEntity
@@ -56,6 +67,14 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface ClassDeclaration extends DocEntityBase {
+  type: "class";
+  parent: ExpressionWithTypeArguments;
+  implementsClauses: ExpressionWithTypeArguments[];
+  members: ClassElement[];
+  typeParameters: TypeParameter[];
 }
 
 export interface ModuleDeclaration {
@@ -255,6 +274,7 @@ export interface Modifiers {
   default?: boolean;
   static?: boolean;
   readonly?: boolean;
+  abstract?: boolean;
 }
 
 export type Comment = JSDocComment | string;

@@ -88,6 +88,7 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
 }
 
 // Import visitors
+import "./parser_class";
 import "./parser_enum";
 import "./parser_function";
 import "./parser_interface";
