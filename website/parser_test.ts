@@ -319,3 +319,63 @@ test(async function test_getFilename() {
   assertEqual(p.body[0].definition.fileName, "somewhere#B");
   assertEqual(p.body[1].body[0].definition.fileName, ".#a.b");
 });
+
+test(async function test_class() {
+  const c = parseTs(
+    `
+    import { P, S, T } from "deno";
+    /**
+     * Doc
+     */
+    class c<A, B extends A> implements P<A>, T extends S {}
+    export { c }
+    `
+  )[0];
+  assertEqual(c.type, "class");
+  assertEqual(c.name, "c");
+  assertEqual(c.members.length, 0);
+  assertEqual(c.documentation.type, "jsdoc");
+  assertEqual(c.documentation.comment, "Doc");
+  assertEqual(c.typeParameters.length, 2);
+  assertEqual(c.typeParameters[0].name, "A");
+  assertEqual(c.typeParameters[1].name, "B");
+  assertEqual(c.implementsClauses.length, 2);
+  assertEqual(c.implementsClauses[0].expression, "P");
+  assertEqual(c.implementsClauses[1].expression, "T");
+  assertEqual(c.parent.expression, "S");
+});
+
+test(async function test_accessor() {
+  const c = parseTs(
+    `
+    class c {
+      /**
+       * Foo
+       */
+      set a(value: number) {}
+      /**
+       * Bar
+       */
+      get a(): number {}
+    }
+    export { c }
+    `
+  )[0];
+  assertEqual(c.members.length, 2);
+  // Test setAccessor
+  assertEqual(c.members[0].type, "set");
+  assertEqual(c.members[0].name, "a");
+  assertEqual(c.members[0].documentation.type, "jsdoc");
+  assertEqual(c.members[0].documentation.comment, "Foo");
+  assertEqual(c.members[0].parameter.type, "parameter");
+  assertEqual(c.members[0].parameter.name, "value");
+  assertEqual(c.members[0].parameter.dataType.type, "keyword");
+  assertEqual(c.members[0].parameter.dataType.name, "number");
+  // Test getAccessor
+  assertEqual(c.members[1].type, "get");
+  assertEqual(c.members[1].name, "a");
+  assertEqual(c.members[1].documentation.type, "jsdoc");
+  assertEqual(c.members[1].documentation.comment, "Bar");
+  assertEqual(c.members[1].returnType.type, "keyword");
+  assertEqual(c.members[1].returnType.name, "number");
+});
