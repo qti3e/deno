@@ -13,4 +13,7 @@ prettier --write \
   parser_enum.ts \
   parser_interface.ts \
   parser_name.ts \
-  parser_class.ts
+  parser_class.ts \
+  bin.ts \
+  writer.ts \
+  renderers.ts
