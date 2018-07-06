@@ -46,7 +46,7 @@ registerVisitor(ts.SyntaxKind.InterfaceDeclaration, function(
 });
 
 registerVisitor(ts.SyntaxKind.MethodSignature, function(
-  node: ts.MethodSignature,
+  node: ts.MethodSignature | ts.MethodDeclaration,
   e
 ): void {
   const documentation = util.getDocumentation(this, node);
@@ -58,7 +58,7 @@ registerVisitor(ts.SyntaxKind.MethodSignature, function(
     this.visit(p, parameters);
   }
   this.visit(node.type, util.keepFirstElement);
-  const dataType = util.keepFirstElement.getData();
+  const returnType = util.keepFirstElement.getData();
   const typeParameters: types.TypeParameter[] = [];
   if (node.typeParameters) {
     for (const t of node.typeParameters) {
@@ -66,15 +66,18 @@ registerVisitor(ts.SyntaxKind.MethodSignature, function(
     }
   }
   e.push({
-    type: "methodSignature",
+    type: "method",
     documentation,
     name: name && name.text,
     parameters,
-    dataType,
+    returnType,
     typeParameters,
-    optional: !!node.questionToken
+    optional: !!node.questionToken,
+    ...util.getModifiers(node)
   });
 });
+
+registerVisitor(ts.SyntaxKind.MethodDeclaration, ts.SyntaxKind.MethodSignature);
 
 registerVisitor(ts.SyntaxKind.ExpressionWithTypeArguments, function(
   node: ts.ExpressionWithTypeArguments,

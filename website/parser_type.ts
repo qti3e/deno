@@ -230,7 +230,7 @@ registerVisitor(ts.SyntaxKind.ConstructSignature, function(
   this.visit(node.type, util.keepFirstElement);
   const returnType = util.keepFirstElement.getData();
   e.push({
-    type: "constructSignature",
+    type: "constructor",
     documentation,
     parameters,
     returnType
@@ -248,7 +248,7 @@ registerVisitor(ts.SyntaxKind.PropertySignature, function(
   this.visit(node.type, util.keepFirstElement);
   const dataType = util.keepFirstElement.getData();
   e.push({
-    type: "propertySignature",
+    type: "property",
     documentation,
     name: name && name.text,
     optional,

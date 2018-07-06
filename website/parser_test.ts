@@ -172,17 +172,17 @@ test(async function test_interface() {
   const c = I.members[2];
   const d = I.members[3];
   assertEqual(I.members.length, 4);
-  assertEqual(a.type, "propertySignature");
+  assertEqual(a.type, "property");
   assertEqual(a.name, "a");
   assertEqual(a.optional, false);
   assertEqual(a.documentation.type, "jsdoc");
   assertEqual(a.documentation.comment, "1");
   assertEqual(a.dataType.type, "keyword");
   assertEqual(a.dataType.name, "number");
-  assertEqual(b.type, "propertySignature");
+  assertEqual(b.type, "property");
   assertEqual(b.name, "b");
   assertEqual(b.optional, true);
-  assertEqual(c.type, "methodSignature");
+  assertEqual(c.type, "method");
   assertEqual(c.name, "c");
   assertEqual(c.optional, false);
   // TODO
@@ -193,9 +193,9 @@ test(async function test_interface() {
   assertEqual(c.typeParameters.length, 1);
   assertEqual(c.typeParameters[0].type, "typeParam");
   assertEqual(c.typeParameters[0].name, "S");
-  assertEqual(c.dataType.type, "keyword");
-  assertEqual(c.dataType.name, "void");
-  assertEqual(d.type, "constructSignature");
+  assertEqual(c.returnType.type, "keyword");
+  assertEqual(c.returnType.name, "void");
+  assertEqual(d.type, "constructor");
   assertEqual(d.returnType.type, "keyword");
   assertEqual(d.returnType.name, "this");
   assertEqual(d.parameters.length, 2);

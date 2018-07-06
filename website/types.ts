@@ -34,25 +34,22 @@ export type Type =
 
 // TODO
 // CallSignatureDeclaration
-export type TypeElement =
-  | IndexSignature
-  | ConstructSignature
-  | PropertySignature
-  | MethodSignature;
+export type TypeElement = IndexSignature | Constructor | Property | Method;
 
 // TODO
-// PropertyDeclaration
-// MethodDeclaration
-// ConstructorDeclaration
-// GetAccessorDeclaration
-// SetAccessorDeclaration
 // IndexSignatureDeclaration
-export type ClassElement = any;
+export type ClassElement =
+  | Property
+  | Constructor
+  | Method
+  | GetAccessor
+  | SetAccessor;
 
 export type SerilizedData =
   | DocEntity
   | Type
   | TypeElement
+  | ClassElement
   | JSDocComment
   | Parameter
   | TypeParameter
@@ -67,6 +64,47 @@ export interface DocEntityBase extends Modifiers {
 
 export interface Reference {
   fileName: string;
+}
+
+export interface GetAccessor {
+  type: "get";
+  name: string;
+  documentation: Comment;
+  returnType: Type;
+}
+
+export interface SetAccessor {
+  type: "set";
+  name: string;
+  documentation: Comment;
+  parameter: Parameter;
+}
+
+export interface Method extends Modifiers {
+  type: "method";
+  name: string;
+  documentation: Comment;
+  parameters: Parameter[];
+  returnType: Type;
+  typeParameters: TypeParameter[];
+  optional: boolean;
+}
+
+export interface Constructor {
+  type: "constructor";
+  documentation: Comment;
+  parameters: Parameter[];
+  returnType: Type;
+}
+
+export interface Property extends Modifiers {
+  type: "property";
+  documentation: Comment;
+  name: string;
+  optional: boolean;
+  dataType: Type;
+  // TODO
+  initializer?: any;
 }
 
 export interface ClassDeclaration extends DocEntityBase {
@@ -119,16 +157,6 @@ export interface ExpressionWithTypeArguments extends Reference {
   arguments: Type[];
 }
 
-export interface MethodSignature {
-  type: "methodSignature";
-  name: string;
-  documentation: Comment;
-  parameters: Parameter[];
-  dataType: Type;
-  typeParameters: TypeParameter[];
-  optional: boolean;
-}
-
 export interface InterfaceDeclaration extends DocEntityBase {
   type: "interface";
   parameters: TypeParameter[];
@@ -150,14 +178,6 @@ export interface ConditionalType {
   falseType: Type;
 }
 
-export interface PropertySignature {
-  type: "propertySignature";
-  documentation: Comment;
-  name: string;
-  optional: boolean;
-  dataType: Type;
-}
-
 export interface EnumDeclaration extends DocEntityBase {
   type: "enum";
   members: EnumMember[];
@@ -168,13 +188,6 @@ export interface EnumMember {
   documentation: Comment;
   name: string;
   initializer?: NumericLiteral | StringLiteral | Keyword<string>;
-}
-
-export interface ConstructSignature {
-  type: "constructSignature";
-  documentation: Comment;
-  parameters: Parameter[];
-  returnType: Type;
 }
 
 export interface IndexSignature {
