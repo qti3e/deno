@@ -2,6 +2,10 @@ import * as types from "./types";
 import { Writer } from "./writer";
 
 export function renderFunction(w: Writer, e: types.FunctionDeclaration) {
+  if (e.async) {
+    w.write(w.style.keyword("async"));
+    w.write(" ");
+  }
   w.write(w.style.keyword("function"));
   w.write(" ");
   w.write(w.style.identifier(e.name));
@@ -44,9 +48,50 @@ export function renderTypeRef(w: Writer, e: types.TypeReference) {
 }
 
 export function renderJsdoc(w: Writer, e: types.JSDocComment) {
-  w.write(e.comment);
+  w.writeDescription(e.comment);
 }
 
 export function renderKeyword(w: Writer, e: types.Keyword<string>) {
   w.write(w.style.keyword(e.name));
+}
+
+export function renderType(w: Writer, e: types.TypeDeclaration) {
+  w.write(w.style.keyword("type"));
+  w.write(" ");
+  w.write(w.style.identifier(e.name));
+  w.renderTypeParameters(e.parameters);
+  w.write(" = ");
+  w.render(e.definition);
+  w.write(";");
+  w.renderChild(e.documentation);
+}
+
+export function renderTypeLiteral(w: Writer, e: types.TypeLiteral) {
+  w.write("{");
+  for (const m of e.members) {
+    w.renderChild(m);
+  }
+  w.eol();
+  w.write("}");
+}
+
+export function renderProperty(w: Writer, e: types.Property) {
+  if (e.readonly) {
+    w.write(w.style.keyword("readonly"));
+    w.write(" ");
+  }
+  w.write(w.style.identifier(e.name));
+  if (e.optional) w.write("?");
+  w.write(": ");
+  w.render(e.dataType);
+  w.write(";");
+  w.renderChild(e.documentation);
+}
+
+export function renderNumber(w: Writer, e: types.NumericLiteral) {
+  w.write(w.style.literal(e.text));
+}
+
+export function renderString(w: Writer, e: types.StringLiteral) {
+  w.write(w.style.literal(JSON.stringify(e.text)));
 }

@@ -17,20 +17,22 @@ for (let key in r) {
 export class Writer {
   private childWriter: Writer;
   style = style;
-  constructor(private readonly padding: string) {}
+  constructor(private padding: string) {}
 
   write(data: string) {
-    const lines = data.split(/\n/g).map(l => this.padding + l);
+    const lines = data.split(/\n/g).map((l, i) =>
+      (i === 0 ? "" : this.padding) + l
+    );
     process.stdout.write(lines.join("\n"));
   }
 
   eol() {
-    process.stdout.write("\n");
+    this.write("\n");
   }
 
   render(entity: types.SerilizedData | string) {
     if (typeof entity === "string") {
-      this.write(entity + "\n");
+      this.writeDescription(entity + "\n");
       return;
     }
     const renderer = renderers[entity.type];
@@ -46,12 +48,10 @@ export class Writer {
   }
 
   renderChild(entity: types.SerilizedData | string) {
+    if (!entity) return;
     if (!this.childWriter) {
-      const padding = this.padding + style.border("    ║ ");
+      const padding = this.padding + "    ";
       this.childWriter = new Writer(padding);
-    } else {
-      this.childWriter.eol();
-      this.write(style.border("    ╠══════════"));
     }
     this.childWriter.eol();
     this.childWriter.render(entity);
@@ -73,6 +73,15 @@ export class Writer {
     this.renderParameters(parameters);
     this.write(">");
   }
+
+  writeDescription(d: string) {
+    const tmp = this.padding;
+    const border = this.style.border("║ ");
+    this.padding += border;
+    this.write(border);
+    this.write(d);
+    this.padding = tmp;
+  }
 }
 
 const style = {
@@ -80,5 +89,6 @@ const style = {
   error: chalk.red.italic,
   comment: chalk,
   keyword: chalk.blue,
-  identifier: chalk.green.bold
+  identifier: chalk.green.bold,
+  literal: chalk.yellow.italic
 };
