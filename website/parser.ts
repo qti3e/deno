@@ -83,7 +83,6 @@ export function parse(sourceCode: string, fileName: string): types.DocEntity[] {
   parser.visit = visit.bind(parser);
   parser.requestVisit = requestVisit.bind(parser);
   const e = [];
-  console.log(sourceFile);
   visit.call(parser, sourceFile, e);
   return e as types.DocEntity[];
 }

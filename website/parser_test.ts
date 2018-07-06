@@ -287,3 +287,35 @@ test(async function test_findDeclaration() {
   assertEqual(doc[0].name, "n");
   assertEqual(doc[0].body[0].documentation.comment, "Right");
 });
+
+test(async function test_getFilename() {
+  const p = parseTs(
+    `
+    import { B as A } from "somewhere";
+    namespace a {
+      export type b = A;
+      export namespace c {
+        export type d = b;
+      }
+    }
+    export { a as p }
+    `
+  )[0];
+  assertEqual(p.type, "module");
+  assertEqual(p.name, "p");
+  assertEqual(p.body.length, 2);
+  assertEqual(p.body[0].type, "type");
+  assertEqual(p.body[0].name, "b");
+  assertEqual(p.body[0].definition.type, "typeRef");
+  assertEqual(p.body[0].definition.name, "A");
+  assertEqual(p.body[1].type, "module");
+  assertEqual(p.body[1].name, "c");
+  assertEqual(p.body[1].body.length, 1);
+  assertEqual(p.body[1].body[0].type, "type");
+  assertEqual(p.body[1].body[0].name, "d");
+  assertEqual(p.body[1].body[0].definition.type, "typeRef");
+  assertEqual(p.body[1].body[0].definition.name, "b");
+  // Test file names.
+  assertEqual(p.body[0].definition.fileName, "somewhere#B");
+  assertEqual(p.body[1].body[0].definition.fileName, ".#a.b");
+});

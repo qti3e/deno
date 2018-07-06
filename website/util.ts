@@ -43,20 +43,26 @@ export function findDeclaration(
   parser: types.Parser,
   node: ts.Identifier
 ): ts.Node | undefined {
+  if (node["_denoDeclaration"]) {
+    return node["_denoDeclaration"];
+  }
   const flowNode = (node as any).flowNode;
   if (
     flowNode.node &&
     flowNode.node.name &&
     flowNode.node.name.text === node.text
   ) {
+    node["_denoDeclaration"] = flowNode.node;
     return flowNode.node;
   }
-  let n: any = node;
-  while (n) {
-    if (n.locals && n.locals.has(node.text)) {
-      return n.locals.get(node.text).declarations[0];
+  let tmp: any = node;
+  while (tmp) {
+    if (tmp.locals && tmp.locals.has(node.text)) {
+      const ret = tmp.locals.get(node.text).declarations[0];
+      node["_denoDeclaration"] = ret;
+      return ret;
     }
-    n = n.parent;
+    tmp = tmp.parent;
   }
   // TODO throw error.
   return undefined;
@@ -70,13 +76,50 @@ export function findDeclaration(
  * "." means the node was defiend in the current file.
  */
 export function getFilename(parser: types.Parser, node: ts.Identifier): string {
-  // TODO
-  // 1. get a node from findDeclaration(parser, node) call it n.
-  // 2. if n is any kind of import statements:
-  // 3.   return file name of n;
-  // 4. else:
-  // 5.   return ".";
-  return ".#" + node.text;
+  // TODO The current cache is non-functional, we should change
+  // parser.currentNamespace's type from string[] to ModuleDeclaration[] and
+  // assign a map to every namespace (`n.denoCache = new Map<string, any>[]`).
+  // Then we should use that map here to cache the fileName, (the key would be
+  // node.text).
+
+  // Use the cached value when there is one.
+  if (node["_denoFileName"]) return node["_denoFileName"];
+  const namespaces = [...parser.currentNamespace];
+  let declaration: ts.Node;
+  let tmp: any = node;
+  while (tmp) {
+    if (tmp.locals && tmp.locals.has(node.text)) {
+      declaration = tmp.locals.get(node.text).declarations[0];
+      break;
+    }
+    if (tmp.kind === ts.SyntaxKind.ModuleDeclaration) namespaces.pop();
+    tmp = tmp.parent;
+  }
+  if (!declaration) {
+    // TODO throw error.
+    return undefined;
+  }
+  let name = node.text;
+  let fileName = ".";
+  let moduleSpecifier;
+  if (ts.isImportSpecifier(declaration)) {
+    moduleSpecifier = declaration.parent.parent.parent.moduleSpecifier;
+    if (declaration.propertyName) {
+      name = declaration.propertyName.text;
+    }
+  } else if (ts.isNamespaceImport(declaration)) {
+    moduleSpecifier = declaration.parent.parent.moduleSpecifier;
+  } else if (ts.isImportClause(declaration)) {
+    moduleSpecifier = declaration.parent.moduleSpecifier;
+  }
+  if (moduleSpecifier) {
+    if (!ts.isStringLiteral(moduleSpecifier)) return undefined;
+    fileName = moduleSpecifier.text;
+  }
+  namespaces.push(name);
+  const ret = fileName + "#" + namespaces.join(".");
+  node["_denoFileName"] = ret;
+  return ret;
 }
 
 /**

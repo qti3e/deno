@@ -48,26 +48,36 @@ registerVisitor(ts.SyntaxKind.ExportSpecifier, function(
   e
 ): void {
   const d = util.findDeclaration(this, node.propertyName || node.name);
+  const name = node.name.text;
   // Maybe print a warning or throw an error?
   if (!d) return;
-  this.visit(d, util.keepFirstElement);
-  const data = util.keepFirstElement.getData();
-  if (!data) return;
-  data.name = node.name.text;
-  e.push(data);
+  if (d.kind === ts.SyntaxKind.NamespaceImport) {
+    this.visit(d, {
+      push(entity: types.DocEntity) {
+        entity.name = name + "." + entity.name;
+        e.push(entity);
+      }
+    });
+  } else {
+    this.visit(d, util.keepFirstElement);
+    const data = util.keepFirstElement.getData();
+    if (!data) return;
+    data.name = name;
+    e.push(data);
+  }
 });
 
 registerVisitor(ts.SyntaxKind.ModuleDeclaration, function(
   node: ts.ModuleDeclaration,
   e
 ): void {
-  const body: types.DocEntity[] = [];
-  this.visit(node.body, body);
   const name = node.name.text;
   this.currentNamespace.push(name);
+  const body: types.DocEntity[] = [];
+  this.visit(node.body, body);
   e.push({
     type: "module",
-    name: node.name.text,
+    name,
     body
   });
   this.currentNamespace.pop();
