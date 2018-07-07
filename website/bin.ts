@@ -13,8 +13,9 @@ const isHTML = process.argv[process.argv.length === 4 ? 2 : null];
 
 const sourceCode = fs.readFileSync(fileName).toString();
 const doc = parse(sourceCode, fileName);
-const writer = new Writer(isHTML === "---html");
+const writer = new Writer(isHTML === "--html");
 
 for (const entity of doc) {
   writer.render(entity);
 }
+console.log();

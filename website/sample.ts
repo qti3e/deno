@@ -3,8 +3,8 @@
  * Another line
  * Test
  */
-function x<A, B extends X<P>>(a: string): number {
+function x<A, B extends X<P>>(a: X): X {
 
 }
 
-export { x as b };
+export { x }

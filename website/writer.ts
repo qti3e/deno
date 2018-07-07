@@ -1,6 +1,5 @@
 // Copyright 2018 Ryan Dahl <ry@tinyclouds.org>
 // All rights reserved. MIT License.
-
 import chalk from "chalk";
 import * as r from "./renderers";
 import * as types from "./types";
@@ -23,8 +22,11 @@ for (let key in r) {
 
 export class Writer {
   private style: Style;
-  private lastCharacter = "\n";
-  private padding = 0;
+  private lastCharacter = undefined;
+  private padding = 1;
+  private lastPadding = this.padding;
+  private spaceSize = 4;
+  private inPre = 0;
 
   constructor(public isHTML: boolean) {
     this.style = isHTML ? htmlStyle : cliStyle;
@@ -40,7 +42,7 @@ export class Writer {
       throw new Error(`Can not render ${entity.type}.`);
     }
     if (this.isHTML) {
-      this.write(`<div class="doc-entity doc-${entity.type}"`);
+      this.write(`<div class="doc-entity doc-${entity.type}">`);
     }
     renderer(this, entity);
     if (this.isHTML) this.write(`</div>`);
@@ -66,12 +68,39 @@ export class Writer {
   }
 
   private cliWriteLine(line: string): void {
-    const padding = " ".repeat(this.padding * 4);
-    if (this.lastCharacter === "\n") {
-      line = padding + line;
+    const len = line.length;
+    if (this.lastCharacter === "\n" || this.lastCharacter === undefined) {
+      const padding = new Array(this.padding * this.spaceSize).fill(" ");
+      if (this.padding > 0) {
+        const loc = this.inPre ? this.inPre : this.padding;
+        for (let i = 1; i <= loc; ++i) {
+          padding[(i * this.spaceSize) - 2] = chalk.red("║");
+        }
+        if (this.lastPadding !== loc) {
+          const s = (this.lastPadding * this.spaceSize) - 2;
+          const e = (loc * this.spaceSize) - 2;
+          padding[s] = chalk.red("╠");
+          padding[e] = chalk.red("╗");
+          for (let i = s + 1; i < e; ++i) {
+            if ((i + 2) % this.spaceSize === 0) {
+              padding[i] = chalk.red("╦");
+            } else {
+              padding[i] = chalk.red("═");
+            }
+          }
+        }
+        this.lastPadding = loc;
+      }
+      if (this.inPre) {
+        padding.splice((this.inPre * this.spaceSize) - 1, 0, chalk.green("➢"));
+      }
+      line = padding.join("") + line;
+      if (this.lastCharacter !== undefined) {
+        line = "\n" + line;
+      }
     }
     process.stdout.write(line);
-    this.lastCharacter = line[line.length - 1];
+    this.lastCharacter = len === 0 ? "\n" : line[line.length - 1];
   }
 
   private write(data: string): void {
@@ -82,7 +111,12 @@ export class Writer {
     data.split(/\n/g).forEach(this.cliWriteLine.bind(this));
   }
 
-  comemnt(str: string): void {
+  eol() {
+    if (this.isHTML && !this.inPre) return;
+    this.write("");
+  }
+
+  comment(str: string): void {
     this.write(this.style.comment(str));
   }
 
@@ -106,8 +140,18 @@ export class Writer {
     this.write(this.style.anchor(str, href));
   }
 
-  pre(str: string): void {
-    this.write(this.style.pre(str));
+  openPre(): void {
+    this.inPre = this.padding;
+    if (this.isHTML) {
+      this.write(`<pre>`);
+    }
+  }
+
+  closePre(): void {
+    this.inPre = 0;
+    if (this.isHTML) {
+      this.write(`</pre>`);
+    }
   }
 
   header(str: string): void {
@@ -122,7 +166,6 @@ export interface Style {
   literal(str: string): string;
   text(str: string): string;
   anchor(str: string, href: string): string;
-  pre(str: string): string;
   header(str: string): string;
 }
 
@@ -133,7 +176,6 @@ const cliStyle: Style = {
   literal: chalk.yellow.italic,
   text: chalk,
   anchor: chalk,
-  pre: chalk,
   header: chalk.bold
 };
 
@@ -155,9 +197,6 @@ const htmlStyle: Style = {
   },
   anchor(str, href) {
     return str.anchor(href);
-  },
-  pre(str) {
-    return `<pre>${str}</pre`;
   },
   header(str) {
     return `<h1>${str}<h1>`;
