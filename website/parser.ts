@@ -40,7 +40,9 @@ function visit(
   const kind = alias ? alias : node.kind;
   const visitor = VISITORS.get(kind);
   if (visitor === undefined) {
-    console.log("[%s] is not registered", (ts as any).SyntaxKind[kind], node);
+    // console.log(
+    //   "[%s] is not registered", (ts as any).SyntaxKind[kind], node
+    // );
     return;
   }
   if (typeof visitor === "number") {

@@ -33,6 +33,7 @@ export class Writer {
   }
 
   render(entity: string | types.SerilizedData): void {
+    if (!entity) return;
     if (typeof entity === "string") {
       this.text(entity);
       return;
@@ -74,11 +75,11 @@ export class Writer {
       if (this.padding > 0) {
         const loc = this.inPre ? this.inPre : this.padding;
         for (let i = 1; i <= loc; ++i) {
-          padding[(i * this.spaceSize) - 2] = chalk.red("║");
+          padding[i * this.spaceSize - 2] = chalk.red("║");
         }
         if (this.lastPadding !== loc) {
-          const s = (this.lastPadding * this.spaceSize) - 2;
-          const e = (loc * this.spaceSize) - 2;
+          const s = this.lastPadding * this.spaceSize - 2;
+          const e = loc * this.spaceSize - 2;
           padding[s] = chalk.red("╠");
           padding[e] = chalk.red("╗");
           for (let i = s + 1; i < e; ++i) {
@@ -92,7 +93,11 @@ export class Writer {
         this.lastPadding = loc;
       }
       if (this.inPre) {
-        padding.splice((this.inPre * this.spaceSize) - 1, 0, chalk.green("➢"));
+        padding.splice(
+          this.inPre * this.spaceSize - 1,
+          0,
+          chalk.yellowBright("◉")
+        );
       }
       line = padding.join("") + line;
       if (this.lastCharacter !== undefined) {
@@ -121,7 +126,7 @@ export class Writer {
   }
 
   keyword(str: string): void {
-    this.write(this.style.comment(str));
+    this.write(this.style.keyword(str));
   }
 
   identifier(str: string): void {
@@ -136,8 +141,16 @@ export class Writer {
     this.write(this.style.text(str));
   }
 
-  anchor(str: string, href: string): void {
-    this.write(this.style.anchor(str, href));
+  openAnchor(href: string): void {
+    if (this.isHTML) {
+      this.write(`<a href="${href}">`);
+    }
+  }
+
+  closeAnchor(): void {
+    if (this.isHTML) {
+      this.write(`</a>`);
+    }
   }
 
   openPre(): void {
@@ -165,7 +178,6 @@ export interface Style {
   identifier(str: string): string;
   literal(str: string): string;
   text(str: string): string;
-  anchor(str: string, href: string): string;
   header(str: string): string;
 }
 
@@ -175,7 +187,6 @@ const cliStyle: Style = {
   identifier: chalk.green.bold,
   literal: chalk.yellow.italic,
   text: chalk,
-  anchor: chalk,
   header: chalk.bold
 };
 
@@ -195,10 +206,7 @@ const htmlStyle: Style = {
   text(str) {
     return str;
   },
-  anchor(str, href) {
-    return str.anchor(href);
-  },
   header(str) {
-    return `<h1>${str}<h1>`;
+    return `<h1>${str}</h1>`;
   }
 };
