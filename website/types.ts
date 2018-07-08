@@ -288,6 +288,7 @@ export interface Modifiers {
   static?: boolean;
   readonly?: boolean;
   abstract?: boolean;
+  // TODO dotDotDot token
 }
 
 export type Comment = JSDocComment | string;

@@ -191,6 +191,9 @@ export class Writer {
   }
 
   header(str: string): void {
+    if (!this.isHTML) {
+      str = "▶ " + str;
+    }
     this.write(this.style.header(str));
   }
 }
@@ -208,7 +211,7 @@ const cliStyle: Style = {
   comment: chalk.green,
   keyword: chalk.blue,
   identifier: chalk.green.bold,
-  literal: chalk.yellow.italic,
+  literal: chalk.yellowBright,
   text: chalk,
   header: chalk.bold
 };

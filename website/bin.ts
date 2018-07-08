@@ -17,6 +17,8 @@ for (const a of pArgs) {
 }
 const fileName = pArgs.filter(x => x !== "--html")[0];
 
+if (!isHTML) console.log("Start");
+
 const sourceCode = fs.readFileSync(fileName).toString();
 const doc = parse(sourceCode, fileName);
 const writer = new Writer(isHTML);

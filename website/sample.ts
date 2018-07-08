@@ -6,8 +6,8 @@ import { X } from "ds";
  * Test
  * @param a test
  */
-function x<A, B extends X<P>>(a: X): X {
-
+async function x<A, B extends X<P>>(a: X): P {
+  return () => a;
 }
 
 export { x }
