@@ -28,7 +28,10 @@ if (isHTML) {
   process.stdout.write(`<style>${styles}</style>`);
 }
 
-for (const entity of doc) {
-  writer.render(entity);
+for (let i = 0; i < doc.length - 1; ++i) {
+  writer.render(doc[i]);
+  writer.eol();
+  writer.eol();
 }
-console.log();
+writer.render(doc[doc.length - 1]);
+writer.eol();

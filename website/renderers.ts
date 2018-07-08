@@ -17,21 +17,25 @@ export function renderFunction(w: Writer, e: types.FunctionDeclaration): void {
   w.identifier(e.name);
   if (!isEmpty(e.typeParameters)) {
     w.text("<");
-    e.typeParameters.forEach((t, i) => {
-      if (i > 0 && e.typeParameters.length > 0) {
-        w.text(", ");
-      }
-      w.render(t);
-    });
+    w.render(e.typeParameters[0]);
+    for (let i = 1; i < e.typeParameters.length; ++i) {
+      w.text(", ");
+      w.render(e.typeParameters[i]);
+    }
     w.text(">");
   }
   w.text("(");
-  e.parameters.forEach((t, i) => {
-    if (i > 0 && e.parameters.length > 0) {
+  w.increasePadding();
+  if (!isEmpty(e.parameters)) {
+    w.eol();
+    w.render(e.parameters[0]);
+    for (let i = 1; i < e.parameters.length; ++i) {
       w.text(", ");
+      w.eol();
+      w.render(e.parameters[i]);
     }
-    w.render(t);
-  });
+  }
+  w.decreasePadding();
   if (e.parameters.length > 0) {
     w.eol();
   }
@@ -65,19 +69,16 @@ export function renderTypeRef(w: Writer, e: types.TypeReference): void {
   w.closeAnchor();
   if (!isEmpty(e.arguments)) {
     w.text("<");
-    e.arguments.forEach((t, i) => {
-      if (i > 0 && e.arguments.length > 0) {
-        w.text(", ");
-      }
-      w.render(t);
-    });
+    w.render(e.arguments[0]);
+    for (let i = 1; i < e.arguments.length; ++i) {
+      w.text(", ");
+      w.render(e.arguments[i]);
+    }
     w.text(">");
   }
 }
 
 export function renderParameter(w: Writer, e: types.Parameter): void {
-  w.eol();
-  w.increasePadding();
   if (typeof e.documentation === "string" && e.documentation) {
     const doc = e.documentation.split(/\n/g).map(l => "// " + l);
     w.comment(doc.join("\n"));
@@ -91,7 +92,6 @@ export function renderParameter(w: Writer, e: types.Parameter): void {
     w.text(": ");
     w.render(e.dataType);
   }
-  w.decreasePadding();
 }
 
 export function renderJsdoc(w: Writer, e: types.JSDocComment): void {
@@ -103,13 +103,23 @@ export function renderKeyword(w: Writer, e: types.Keyword<string>): void {
 }
 
 export function renderFunctionType(w: Writer, e: types.FunctionType): void {
-  w.text("(");
-  e.typeParameters.forEach((t, i) => {
-    if (i > 0 && e.typeParameters.length > 0) {
+  if (!isEmpty(e.typeParameters)) {
+    w.text("<");
+    w.render(e.typeParameters[0]);
+    for (let i = 1; i < e.typeParameters.length; ++i) {
       w.text(", ");
+      w.render(e.typeParameters[i]);
     }
-    w.render(t);
-  });
+    w.text(">");
+  }
+  w.text("(");
+  if (!isEmpty(e.parameters)) {
+    w.render(e.parameters[0]);
+    for (let i = 1; i < e.parameters.length; ++i) {
+      w.text(", ");
+      w.render(e.parameters[i]);
+    }
+  }
   w.text("): ");
   w.render(e.returnType);
 }
@@ -162,5 +172,84 @@ export function renderIntersectionType(
   for (let i = 1; i < e.types.length; ++i) {
     w.text(" & ");
     w.render(e.types[i]);
+  }
+}
+
+export function renderTypePredicate(w: Writer, e: types.TypePredicate): void {
+  w.identifier(e.parameterName);
+  w.text(" is ");
+  w.render(e.dataType);
+}
+
+export function renderType(w: Writer, e: types.TypeDeclaration): void {
+  w.header(`type ${e.name}`);
+  w.eol();
+  let typeLiteral = false;
+
+  w.openPre();
+  w.keyword("type ");
+  w.identifier(e.name);
+  if (!isEmpty(e.parameters)) {
+    w.text("<");
+    w.render(e.parameters[0]);
+    for (let i = 1; i < e.parameters.length; ++i) {
+      w.text(", ");
+      w.render(e.parameters[i]);
+    }
+    w.text(">");
+  }
+  if (e.definition.type === "typeLiteral") {
+    if (e.definition.members.length === 0) {
+      w.text(" = ");
+      w.text("{}");
+    } else {
+      typeLiteral = true;
+    }
+  } else {
+    w.text(" = ");
+    w.render(e.definition);
+  }
+  if (!typeLiteral) {
+    w.text(";");
+  }
+  w.closePre();
+
+  w.eol();
+  w.render(e.documentation);
+
+  if (typeLiteral) {
+    w.eol();
+    w.increasePadding();
+    w.header("Members:");
+    w.render(e.definition);
+    w.decreasePadding();
+  }
+}
+
+export function renderTypeLiteral(w: Writer, e: types.TypeLiteral): void {
+  w.render(e.members[0]);
+  for (let i = 1; i < e.members.length; ++i) {
+    w.eol();
+    w.render(e.members[i]);
+  }
+}
+
+export function renderProperty(w: Writer, e: types.Property): void {
+  w.eol();
+  w.openPre();
+  w.identifier(e.name);
+  if (e.optional) {
+    w.text("?");
+  }
+  if (e.dataType) {
+    w.text(": ");
+    w.render(e.dataType);
+  }
+  // TODO initializer
+  w.text(";");
+  w.closePre();
+  if (e.documentation) {
+    w.eol();
+    w.render(e.documentation);
   }
 }

@@ -1,13 +1,21 @@
-import { X } from "ds";
+import { T } from "lib";
 
 /**
- * Comment
- * Another line
- * Test
- * @param a test
+ * Doc
  */
-async function x<A, B extends X<P>>(a: X): P {
-  return () => a;
-}
+type a<D extends T> = {
+  /**
+   * Sample
+   */
+  x: number;
+};
 
-export { x }
+/**
+ * Function
+ * Comments
+ * Another line
+ * @param a Comment for parameter.
+ */
+function b<X>(a: X, b): void {}
+
+export { a as MyType, b as MyFunction };

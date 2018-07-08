@@ -63,7 +63,7 @@ export class Writer {
     // If size has changed since the last call to this function,
     // draw a horizontal line.
     if (
-      this.lastPadding !== this.padding &&
+      this.lastPadding < this.padding &&
       this.lastPadding &&
       this.inPre === null
     ) {

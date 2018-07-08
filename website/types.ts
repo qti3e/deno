@@ -102,7 +102,7 @@ export interface Property extends Modifiers {
   documentation: Comment;
   name: string;
   optional: boolean;
-  dataType: Type;
+  dataType?: Type;
   // TODO
   initializer?: any;
 }
