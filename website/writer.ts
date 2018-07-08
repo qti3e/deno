@@ -22,11 +22,82 @@ for (let key in r) {
 
 export class Writer {
   private style: Style;
-  private lastCharacter = undefined;
   private padding = 1;
-  private lastPadding = this.padding;
+  private lastPadding;
+  private lastCharacter;
   private spaceSize = 4;
-  private inPre = 0;
+  private inPre = null;
+
+  private drawPadding(): void {
+    if (this.isHTML) {
+      if (this.inPre !== null) {
+        const paddingSize = this.spaceSize * (this.padding - this.inPre);
+        process.stdout.write(" ".repeat(paddingSize));
+      }
+      return;
+    }
+    // Only attempt to draw padding when:
+    // padding > 0 or
+    // content is inside the pre tag.
+    if (this.padding < 1 && this.inPre === null) return;
+    // Create an array filled with white-space
+    // so we can change each element individually.
+    let paddingSize = this.spaceSize * this.padding;
+    // Always keep free room for pre border.
+    if (this.inPre !== null) paddingSize += 2;
+    const padding = new Array(paddingSize).fill(" ");
+    // Draw border for the pre tag.
+    if (this.inPre !== null) {
+      padding[this.spaceSize * this.inPre] = chalk.yellowBright("◉");
+    }
+    // `size` is conceptually same thisng as paddingSize, but with it
+    // considers that we should not draw `lines` inside the pre tag.
+    const size =
+      this.inPre === null ? paddingSize : this.spaceSize * this.inPre;
+    // Draw lines.
+    for (let i = this.spaceSize - 1; i < size; i += this.spaceSize) {
+      // -1 to keep an space before content.
+      padding[i - 1] = chalk.red("║");
+    }
+    // Now we try to make the output look a bit better.
+    // If size has changed since the last call to this function,
+    // draw a horizontal line.
+    if (
+      this.lastPadding !== this.padding &&
+      this.lastPadding &&
+      this.inPre === null
+    ) {
+      const s = this.lastPadding * this.spaceSize - 2;
+      const e = paddingSize - 2;
+      padding[s] = chalk.red("╠");
+      padding[e] = chalk.red("╗");
+      for (let i = s + 1; i < e; ++i) {
+        if ((i + 2) % this.spaceSize === 0) {
+          padding[i] = chalk.red("╦");
+        } else {
+          padding[i] = chalk.red("═");
+        }
+      }
+    }
+    this.lastPadding = this.padding;
+    process.stdout.write(padding.join(""));
+  }
+
+  private write(data: string): void {
+    // Draw the padding of the first line.
+    if (!this.lastCharacter) this.drawPadding();
+    for (const c of data) {
+      if (this.lastCharacter === "\n") {
+        this.drawPadding();
+      }
+      this.lastCharacter = c;
+      if (c === "\n" && this.isHTML && this.inPre === null) {
+        process.stdout.write("<br />");
+        continue;
+      }
+      process.stdout.write(c);
+    }
+  }
 
   constructor(public isHTML: boolean) {
     this.style = isHTML ? htmlStyle : cliStyle;
@@ -42,16 +113,16 @@ export class Writer {
     if (!renderer) {
       throw new Error(`Can not render ${entity.type}.`);
     }
-    if (this.isHTML) {
+    if (this.isHTML && this.inPre === null) {
       this.write(`<div class="doc-entity doc-${entity.type}">`);
     }
     renderer(this, entity);
-    if (this.isHTML) this.write(`</div>`);
+    if (this.isHTML && this.inPre === null) this.write(`</div>`);
   }
 
   increasePadding() {
     this.padding++;
-    if (this.isHTML) {
+    if (this.isHTML && this.inPre === null) {
       this.write(`<div class="padding">`);
     }
   }
@@ -63,62 +134,14 @@ export class Writer {
         "Called decreasePadding() more than expected number of times."
       );
     }
-    if (this.isHTML) {
+    if (this.isHTML && this.inPre === null) {
       this.write(`</div>`);
     }
   }
 
-  private cliWriteLine(line: string): void {
-    const len = line.length;
-    if (this.lastCharacter === "\n" || this.lastCharacter === undefined) {
-      const padding = new Array(this.padding * this.spaceSize).fill(" ");
-      if (this.padding > 0) {
-        const loc = this.inPre ? this.inPre : this.padding;
-        for (let i = 1; i <= loc; ++i) {
-          padding[i * this.spaceSize - 2] = chalk.red("║");
-        }
-        if (this.lastPadding !== loc) {
-          const s = this.lastPadding * this.spaceSize - 2;
-          const e = loc * this.spaceSize - 2;
-          padding[s] = chalk.red("╠");
-          padding[e] = chalk.red("╗");
-          for (let i = s + 1; i < e; ++i) {
-            if ((i + 2) % this.spaceSize === 0) {
-              padding[i] = chalk.red("╦");
-            } else {
-              padding[i] = chalk.red("═");
-            }
-          }
-        }
-        this.lastPadding = loc;
-      }
-      if (this.inPre) {
-        padding.splice(
-          this.inPre * this.spaceSize - 1,
-          0,
-          chalk.yellowBright("◉")
-        );
-      }
-      line = padding.join("") + line;
-      if (this.lastCharacter !== undefined) {
-        line = "\n" + line;
-      }
-    }
-    process.stdout.write(line);
-    this.lastCharacter = len === 0 ? "\n" : line[line.length - 1];
-  }
-
-  private write(data: string): void {
-    if (this.isHTML) {
-      process.stdout.write(data);
-      return;
-    }
-    data.split(/\n/g).forEach(this.cliWriteLine.bind(this));
-  }
-
   eol() {
     if (this.isHTML && !this.inPre) return;
-    this.write("");
+    this.write("\n");
   }
 
   comment(str: string): void {
@@ -161,7 +184,7 @@ export class Writer {
   }
 
   closePre(): void {
-    this.inPre = 0;
+    this.inPre = null;
     if (this.isHTML) {
       this.write(`</pre>`);
     }
@@ -192,16 +215,16 @@ const cliStyle: Style = {
 
 const htmlStyle: Style = {
   comment(str) {
-    return `<p class="comment">${str}</p>`;
+    return `<span class="comment">${str}</span>`;
   },
   keyword(str) {
-    return `<p class="keyword">${str}</p>`;
+    return `<span class="keyword">${str}</span>`;
   },
   identifier(str) {
-    return `<p class="identifier">${str}</p>`;
+    return `<span class="identifier">${str}</span>`;
   },
   literal(str) {
-    return `<p class="literal">${str}</p>`;
+    return `<span class="literal">${str}</span>`;
   },
   text(str) {
     return str;

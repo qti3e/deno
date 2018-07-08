@@ -41,7 +41,11 @@ export function renderFunction(w: Writer, e: types.FunctionDeclaration) {
   }
   w.closePre();
   w.eol();
+  w.increasePadding();
+  w.increasePadding();
   w.render(e.documentation);
+  w.decreasePadding();
+  w.decreasePadding();
 }
 
 export function renderTypeParam(w: Writer, e: types.TypeParameter) {

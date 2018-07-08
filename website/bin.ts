@@ -8,12 +8,23 @@ if (process.argv.length > 4 || process.argv.length < 3) {
 }
 
 // Read file and parse it.
-const fileName = process.argv[process.argv.length === 3 ? 2 : 3];
-const isHTML = process.argv[process.argv.length === 4 ? 2 : null];
+const pArgs = process.argv.slice(2);
+let isHTML = false;
+for (const a of pArgs) {
+  if (a === "--html") {
+    isHTML = true;
+  }
+}
+const fileName = pArgs.filter(x => x !== "--html")[0];
 
 const sourceCode = fs.readFileSync(fileName).toString();
 const doc = parse(sourceCode, fileName);
-const writer = new Writer(isHTML === "--html");
+const writer = new Writer(isHTML);
+const styles = fs.readFileSync(__dirname + "/styles.css");
+
+if (isHTML) {
+  process.stdout.write(`<style>${styles}</style>`);
+}
 
 for (const entity of doc) {
   writer.render(entity);
