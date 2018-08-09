@@ -3,8 +3,9 @@ import * as types from "./types";
 import * as ast from "./ast";
 import * as _ from "./util";
 
-export function serialize(node: ts.Node | symbol): types.DocEntry {
-  if (typeof node === "symbol") return undefined;
+export const docEntries = [];
+
+export function serialize(node: ts.Node): types.DocEntry {
   if (_.isScopeNode(node)) {
     return serializeModule(node);
   } else if (ts.isVariableDeclaration(node)) {
@@ -26,8 +27,14 @@ function serializeModule(node: ts.Scope): types.NamespaceDocEntry {
   const childs: types.DocEntry[] = [];
   node.exports.forEach((exportedNode, name) => {
     const declaration = ast.findDeclarationOfExportedNode(exportedNode);
+    if (typeof declaration === "symbol") {
+      // We only reach here in this situation:
+      // module.exports = exports;
+      // And I have no idea of why someone might want to do this.
+      return;
+    }
     const docEntry = serialize(declaration);
-    if (!docEntry) return;
+    if (!docEntry) { return; }
     docEntry.name = name;
     childs.push(docEntry);
   });
@@ -36,13 +43,13 @@ function serializeModule(node: ts.Scope): types.NamespaceDocEntry {
     doc,
     name,
     childs
-  }
+  };
 }
 
 function serializeClass(node: ts.ClassLikeDeclaration): types.ClassDocEntry {
   const doc = ast.getDocumentation(node);
   let parent;
-  let implement = [];
+  const implement = [];
   if (node.heritageClauses) {
     for (const h of node.heritageClauses) {
       for (const t of h.types) {
@@ -76,9 +83,12 @@ function serializeVariableDeclaration(
   if (node.initializer && ts.isFunctionLike(node.initializer)) {
     return serializeSignature(node.initializer);
   }
+  if (node.initializer && ts.isObjectLiteralExpression(node)) {
+    return; 
+  }
   const doc = ast.getDocumentation(node);
   const type = serializeTypeNode(node.type);
-  const value = serializeLiteral(node.initializer as ts.LiteralExpression) || "...";
+  const value = serializeLiteral(node.initializer) || "...";
   return {
     kind: "constant",
     doc,
@@ -97,7 +107,7 @@ export function serializeSignature(
     doc,
     typeParams: [],
     params: [],
-  }
+  };
   if (node.typeParameters) {
     for (const t of node.typeParameters) {
       e.typeParams.push(serializeTypeParameter(t));
@@ -128,6 +138,15 @@ export function serializeSignature(
     ts.isConstructorTypeNode(node) ||
     ts.isConstructorDeclaration(node)) {
     e.isConstructor = true;
+  }
+  if (ts.isFunctionDeclaration(node)) {
+    // TODO(qti3e) Search for prootypes
+    // functionName.prototype.xxx
+    // Static proprties:
+    // functionName.xxx
+    // namespace functionName {
+    //   xxx: ...;
+    // }
   }
   return e;
 }
@@ -165,7 +184,7 @@ export function serializeTypeParameter(
 }
 
 export function serializeLiteral(node: ts.Expression): string {
-  if (!node) return undefined;
+  if (!node) { return undefined; }
   switch(node.kind) {
     case ts.SyntaxKind.TrueKeyword:
       return "true";
@@ -216,7 +235,7 @@ function parseKeyword(node: ts.Types): string {
 }
 
 export function serializeTypeNode(node: ts.Types): types.Type {
-  if (!node) return undefined;
+  if (!node) { return undefined; }
   // Parse keywords.
   let ret;
   if (ret = parseKeyword(node)) {
@@ -264,6 +283,13 @@ export function serializeTypeNode(node: ts.Types): types.Type {
     // Actully, this is not a type and should not be placed
     // here.
     // TODO(qti3e)
+    if (ts.isEntityName(node.expression)) {
+      const reference = serializeEntityName(node.expression);
+      reference.typeArgs = node.typeArguments.map(serializeTypeNode);
+      return reference;
+    }
+    // TODO(qti3e) Return text of the node (source.substr(node.pos, node.end))
+    return undefined;
   }
   return undefined;
 }

@@ -26,6 +26,8 @@ import { findDeclaration } from "./ast";
 //
 // - exports = ...;
 // Not valid.
+//
+// TODO(qti3e) global.module.exports = ...;
 
 export const exportsSym = Symbol();
 export const moduleSym = Symbol();
@@ -43,10 +45,10 @@ function processExport(
   sourceFile: ts.SourceFile
 ): void {
   const expression = node.expression;
-  if (!ts.isBinaryExpression(expression)) return;
+  if (!ts.isBinaryExpression(expression)) { return; }
   const name = getName(expression);
-  if (!name) return;
-  if (name === "export=") sourceFile.exports.clear();
+  if (!name) { return; }
+  if (name === "export=") { sourceFile.exports.clear(); }
   const right = expression.right;
   if (ts.isIdentifier(right) ||
       ts.isFunctionExpression(right) ||
@@ -70,18 +72,20 @@ function processExport(
       statement.scope = sourceFile;
       statement.parent = sourceFile;
       sourceFile.exports.set(name, declaration);
+    default:
+      return;
   }
 }
 
 function getName(expression: ts.BinaryExpression): string | void {
-  const names: Array<string> = [];
+  const names: string[] = [];
   let tmp = expression.left;
   let identifier: ts.Identifier;
   let depth = 0;
   while (tmp) {
     depth++;
     // No need to look too deep.
-    if (depth === 4) return;
+    if (depth === 4) { return; }
 
     if (ts.isIdentifier(tmp)) {
       names.push(tmp.text);
@@ -105,13 +109,13 @@ function getName(expression: ts.BinaryExpression): string | void {
   names.reverse();
   const declaration = findDeclaration(identifier);
   if (declaration === exportsSym) {
-    if (names.length > 2) return;
+    if (names.length > 2) { return; }
     return names[1];
   }
   if (declaration === moduleSym) {
-    if (names[1] !== "exports") return;
-    if (names.length === 2) return "export=";
-    if (names.length > 3) return;
+    if (names[1] !== "exports") { return; }
+    if (names.length === 2) { return "export="; }
+    if (names.length > 3) { return; }
     return names[2];
   }
 }

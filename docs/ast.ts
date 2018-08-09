@@ -1,11 +1,12 @@
 import * as ts from "typescript";
 import { extractCJSExports, exportsSym, moduleSym } from "./cjs";
-import { resolveModule } from "./parser"
+import { resolveModule } from "./parser";
 import * as types from "./types";
 import * as _ from "./util";
 
 // This file contains helper functions to work
 // with typescript AST.
+// tslint:disable:curly
 
 /**
  * Pre process a sourceFile, and inserts
@@ -27,8 +28,8 @@ export function preProcessSourceFile(
   node.parent = parent;
   if (_.isScopeNode(node)) {
     scope = node;
-    scope.locals = new Map() as any;
-    scope.exports = new Map() as any;
+    scope.locals = new Map() as ts.Map<ts.LocalNode>;
+    scope.exports = new Map() as ts.Map<ts.ExportNode>;
   }
   
   if (ts.isSourceFile(node)) {
@@ -100,7 +101,8 @@ export function preProcessSourceFile(
             name = "export=";
           } else {
             throw new Error(
-              `Module "${sourceFile.fileName}" has no exported member "${name}".`
+              `Module "${sourceFile.fileName}" has no exported` +
+              ` member "${name}".`
             );
           }
         }
@@ -117,6 +119,9 @@ export function preProcessSourceFile(
   //
   // TODO(qti3e) ImportEqualsDeclaration.
   // import X = require("foo");
+  // 
+  // TODO(qti3e) Maybe look inside IFEEs?
+  // (function(){ module.exports = ...; })(module);
 
   // Visit childs
   ts.forEachChild(node, (childNode) => {
@@ -236,8 +241,10 @@ export function getFileName(node: ts.Identifier): types.Reference {
  *
  * @see findDefinition
  */
-export function findDeclaration(node: ts.Identifier): ts.DenoDeclaration | symbol {
-  let definition = findDefinition(node);
+export function findDeclaration(
+  node: ts.Identifier
+): ts.DenoDeclaration | symbol {
+  const definition = findDefinition(node);
   if (typeof definition === "symbol") {
     return definition;
   }
